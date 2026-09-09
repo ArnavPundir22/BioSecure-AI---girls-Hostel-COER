@@ -486,7 +486,7 @@ def admin_academics():
 
 
 # ---------------------------------------------------------------------------
-# Biometric Drift Monitoring Dashboard (Patent Idea #3)
+# Biometric Drift Monitoring Dashboard
 # ---------------------------------------------------------------------------
 
 @admin_bp.route('/drift')

@@ -36,7 +36,7 @@ CREATE TABLE girls_hostel.student_profiles (
     embedding VECTOR(512),                           -- ArcFace 512D Vector
     current_status VARCHAR(20) DEFAULT 'IN',          -- 'IN' (Inside) or 'OUT' (Outside)
     last_movement_time TIMESTAMP WITH TIME ZONE,
-    current_ewma_drift FLOAT DEFAULT 0.0,            -- Patent EWMA drift tracking
+    current_ewma_drift FLOAT DEFAULT 0.0,            -- EWMA drift tracking
     drift_alert_level VARCHAR(50) DEFAULT 'HEALTHY',  -- HEALTHY / WARNING / CRITICAL / ALERT
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );

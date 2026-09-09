@@ -128,7 +128,7 @@ def _send_drift_email_alert(student_id: str, alert_level: str, ewma_drift: float
 
 def _update_drift(student_id: str, cosine_sim: float, pose_yaw: float, pose_pitch: float) -> dict:
     """
-    Pose-Gated EWMA Drift Tracking (Patent Idea #3).
+    Pose-Gated EWMA Drift Tracking.
 
     If the detected face pose exceeds the configured yaw/pitch thresholds,
     the EWMA is NOT updated — the event is logged as POSE_REJECTED so that
@@ -353,7 +353,7 @@ def upload_photo():
                     recognized_ids.add(matched_id)
                     confidence_map[matched_id] = best_score
 
-                    # ── Pose-Gated Drift Detection (Patent Idea #3) ──────────────────
+                    # ── Pose-Gated Drift Detection ──────────────────
                     pose_yaw   = float(face.pose[1]) if (hasattr(face, 'pose') and face.pose is not None) else 0.0
                     pose_pitch = float(face.pose[0]) if (hasattr(face, 'pose') and face.pose is not None) else 0.0
                     drift_info = _update_drift(matched_id, best_score, pose_yaw, pose_pitch)

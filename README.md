@@ -197,4 +197,4 @@ For detailed technical specifications, explore the [`docs/`](file:///home/dell/B
 ## 📄 License & Intellectual Property
 
 Copyright © 2026 COER University, Roorkee. All Rights Reserved.  
-*BioSecure AI — Girls Hostel Security System* contains patent-pending biometric embedding drift accumulation technology.
+*BioSecure AI — Girls Hostel Security System*.

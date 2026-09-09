@@ -42,7 +42,7 @@ The cosine similarity score $S$ between a live normalized vector $\hat{E}_{live}
 
 ---
 
-## 🛡️ Novel 3D Pose Gate & EWMA Embedding Drift Math (2026 Patent Application)
+## 🛡️ 3D Pose Gate & EWMA Embedding Drift Math
 
 To solve **Biometric Template Aging** (gradual vector divergence due to beard growth, new haircuts, weight changes across semesters), BioSecure AI executes a parallel drift monitoring engine:
 
