@@ -1,108 +1,200 @@
 <div align="center">
 
-# 🤖 BioSecure AI
+# 👧 Biosecure AI — Girls Hostel Attendance & Gate Security System
+### COER University, Roorkee
 
-**Automated Facial Recognition Attendance System with Proactive Pose-Gated EWMA Embedding Drift Detection**
+**Enterprise Facial Recognition Security Platform with Asynchronous High-FPS Live Camera Streaming, Multi-Frame Consensus, and Pose-Gated EWMA Biometric Embedding Drift Detection**
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![Flask](https://img.shields.io/badge/Flask-3.1-000000?logo=flask&logoColor=white)](https://flask.palletsprojects.com/)
-[![InsightFace](https://img.shields.io/badge/InsightFace-Buffalo__L-FF6B35)](https://github.com/deepinsight/insightface)
-[![Supabase](https://img.shields.io/badge/Supabase-pgvector-3ECF8E?logo=supabase&logoColor=white)](https://supabase.com/)
+[![InsightFace](https://img.shields.io/badge/InsightFace-ArcFace_512D-FF6B35)](https://github.com/deepinsight/insightface)
+[![OpenCV](https://img.shields.io/badge/OpenCV-High_FPS_MJPEG-5C3EE8?logo=opencv&logoColor=white)](https://opencv.org/)
+[![SQLite](https://img.shields.io/badge/SQLite-WAL_Mode-003B57?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 [![TailwindCSS](https://img.shields.io/badge/TailwindCSS-CDN-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
-[![Patent Status](https://img.shields.io/badge/Patent_Status-IDF_Filed_2026-1F4E78)](file:///home/dell/Face-Attendance-System-Web-Version/IDF/New%20Patent%20IDF.docx)
 
 </div>
 
 ---
 
-## 📖 Project Overview
+## 📖 System Overview
 
-**BioSecure AI** is a state-of-the-art, production-ready web application designed to replace traditional manual paper registers and verbal roll calls in educational institutions with an automated, contactless AI facial recognition pipeline. 
+**BioSecure AI** is an enterprise-grade automated biometric attendance and gate security system engineered for institutional student hostels. Built for **COER University Girls Hostel**, the platform replaces manual register entry with real-time, non-contact facial recognition at entry/exit gates.
 
-By taking or uploading a single classroom group photo, the system instantly identifies all registered students, marks them **PRESENT** in a PostgreSQL database powered by Supabase `pgvector`, and provides real-time digital attendance records.
+The system features a **High-FPS Multithreaded OpenCV + InsightFace Engine** that decouples 30 FPS video streaming from CPU-intensive AI inference, ensuring ultra-smooth camera playback on warden dashboards while maintaining instant student identification and auto-logging entry/exit movements.
 
-Beyond standard attendance marking, BioSecure AI includes a novel, patent-pending **Biometric Embedding Drift Engine (2026 Patent Application)**. This parallel engine monitors facial template aging over time (beards, hairstyles, weight changes) using **3D Pose-Gated EWMA Accumulation**, proactively notifying administrators before biometric recognition failure occurs.
-
----
-
-## 📜 Intellectual Property & Patent Documentation
-
-This repository contains the official 2026 Patent Filing Package for COER University, Roorkee:
-
-* 📄 **[Invention Disclosure Form (IDF)](file:///home/dell/Face-Attendance-System-Web-Version/IDF/New%20Patent%20IDF.docx)**: Official patent disclosure document detailing system architecture, traditional attendance replacement context, pose-gated EWMA drift scoring math, and 300 DPI system flowchart.
-* 📄 **[Patent Prior Art & Novelty Search Report](file:///home/dell/Face-Attendance-System-Web-Version/IDF/Patent_Prior_Art_Search_Report.docx)**: Exhaustive search report covering InPASS, Google Patents, Espacenet, WIPO, USPTO, and IEEE Xplore databases up to August 2026, establishing clear novelty and non-obviousness.
+Additionally, BioSecure AI embeds a **Pose-Gated EWMA Biometric Drift Accumulator** that tracks subtle facial template aging over time (hairstyles, eyewear, facial maturity) and alerts administrators before recognition failures occur.
 
 ---
 
-## 📚 Documentation Hub Index
+## 🏗️ System Architecture
 
-Explore our comprehensive, detailed sub-documentation guides in the [`docs/`](file:///home/dell/Face-Attendance-System-Web-Version/docs) directory:
+```mermaid
+graph TD
+    A[Host Camera Device / USB Webcam] -->|Raw Frames @ 30-60 FPS| B[HostelCameraManager]
+    B -->|Thread 1: Render & Stream| C[Live MJPEG Streamer /hostel/video_feed]
+    C -->|30 FPS Stream| D[Warden Control Center Dashboard]
+    
+    B -->|Thread 2: Async Frame Dispatch| E[Background AI Worker Thread]
+    E -->|Fast 380px Rescale| F[InsightFace 512D ArcFace Model]
+    F -->|Normalize Embedding| G[Cosine Similarity Batch Matcher]
+    G -->|Multi-Frame Streak Consensus| H[Student Movement Logger]
+    H -->|Auto-Log IN/OUT Movement| I[(SQLite Database WAL Mode)]
+    H -->|Update Bounding Boxes| B
+```
 
-* 📖 **[Documentation Hub Index](file:///home/dell/Face-Attendance-System-Web-Version/docs/index.md)**: Central portal and component sequence flowcharts.
-* 🏗️ **[System Architecture Guide](file:///home/dell/Face-Attendance-System-Web-Version/docs/architecture.md)**: Dual-pipeline architecture (Attendance Pipeline + Pose-Gated EWMA Drift Engine).
-* 🗄️ **[Database & pgvector Setup](file:///home/dell/Face-Attendance-System-Web-Version/docs/database.md)**: PostgreSQL schemas, Supabase `pgvector` indexing, and drift tracking tables.
-* 🧠 **[ML & Inference Pipeline](file:///home/dell/Face-Attendance-System-Web-Version/docs/ml_pipeline.md)**: InsightFace `buffalo_l` ArcFace embeddings, RetinaFace landmark alignment, 3D Pose Gate, and EWMA mathematics.
-* 🔌 **[API Reference Guide](file:///home/dell/Face-Attendance-System-Web-Version/docs/api_reference.md)**: REST endpoints for attendance logging, student management, and drift dashboard APIs.
-* 🌍 **[Production Ops & Deployment](file:///home/dell/Face-Attendance-System-Web-Version/docs/deployment.md)**: Gunicorn WSGI tuning, Nginx reverse proxy, systemd services, and `.env` setup.
-* 👨‍💼 **[User & Administrator Guide](file:///home/dell/Face-Attendance-System-Web-Version/docs/user_guide.md)**: Manual for student registrations, attendance uploads, SMTP alerts, and single-click drift resets.
+### Key Performance Innovations:
+1. **Asynchronous Multithreaded Engine**: Camera frame capture (`_camera_loop`) and AI face inference (`_ai_worker_loop`) execute on independent background threads. Video streaming never stutters or drops frames during compute-heavy AI scans.
+2. **Native MJPEG Multipart Streaming**: Web clients connect via a single persistent HTTP connection (`/hostel/video_feed`), rendering live 30 FPS video streams directly in standard `<img>` tags without client-side polling.
+3. **Dual-Tier Verification & Streak Consensus**:
+   * **High-Confidence Instant Pass**: Cosine similarity $\ge 0.36$.
+   * **Consensus Verification Pass**: Cosine similarity $\ge 0.28$ across 2 consecutive frames.
+   * **Quality Gate**: Filters out background faces smaller than $35\text{px}$.
 
 ---
 
-## ✨ Features at a Glance
+## ✨ Enterprise Features
 
-| Category | Feature | Technical Description |
+| Category | Feature | Description |
 |---|---|---|
-| **Attendance Automation** | 📷 **Classroom Photo Ingestion** | Detects and identifies multiple student faces from classroom group photos or camera frames. |
-| **Biometric AI** | 🧠 **InsightFace ArcFace 512D** | Extracts high-precision 512-dimensional normalized hyperspherical face embeddings. |
-| **Stateless Database** | 🚀 **Supabase pgvector** | Vector indexing and cosine distance queries executed natively in PostgreSQL (`match_face` RPC). |
-| **Patent Novelty** | 🛡️ **3D Pose Gate Validator** | Filters out uncooperative head angles ($|\text{Yaw}| \le 25^\circ, |\text{Pitch}| \le 20^\circ$) to eliminate group-photo noise. |
-| **Patent Novelty** | 📈 **EWMA Drift Accumulator** | Exponentially Weighted Moving Average ($\alpha = 0.30$) tracking facial template aging ($D_t = 1 - S$). |
-| **Patent Novelty** | 🚨 **Multi-Tier Alert Machine** | Classifies template health (`HEALTHY` $<0.15$, `WARNING` $\ge 0.15$, `CRITICAL` $\ge 0.25$, `ALERT` $\ge 0.35$). |
-| **Automation** | 📧 **SMTP Email Dispatcher** | Dispatches real-time Gmail warning emails to administrators upon `CRITICAL` state escalation. |
-| **Management** | 👨‍💼 **Admin Drift Dashboard** | `/admin/drift` management portal featuring single-click re-enrollment template reset functionality. |
-| **Security** | 🛡️ **Re-attendance Cooldown** | Blocks accidental duplicate marks within a configurable window (default: 10 mins per lecture). |
-| **UI/UX** | 🎨 **Dark Glassmorphic UI** | Premium dark-mode interface built with TailwindCSS, Lucide icons, and interactive canvas particles. |
+| **Gate Security** | 📹 **Live Dual Gate Stream** | Simultaneous monitoring of Entry (CAM 01) and Exit (CAM 02) host system cameras. |
+| **Biometric AI** | 🧠 **InsightFace ArcFace 512D** | Deep neural embedding extraction yielding sub-millisecond similarity matching. |
+| **Movement Logging** | 🔄 **Auto IN/OUT State Machine** | Automatic student movement log creation with configurable cooldown (15s default). |
+| **Enrollment** | 🎯 **Guided Camera Alignment** | Interactive face positioning oval with centering, scale, and multi-face error checks. |
+| **Drift Monitoring** | 📈 **EWMA Drift Engine** | Proactive tracking of template degradation using Exponentially Weighted Moving Averages. |
+| **Curfew Tracking** | ⏰ **Automated Curfew Engine** | Automatic classification of student gate movements during designated curfew hours. |
+| **Role-Based Access** | 🔐 **RBAC Authorization** | Access controls for Warden, System Admin, and Academic Officers. |
 
 ---
 
-## ⚙️ Key System Configuration Constants (`src/config.py` / `.env`)
+## 📂 Enterprise Project Structure
 
-```ini
-# Face Matching Threshold (Cosine Similarity: 0.0 - 1.0)
-FACE_MATCH_THRESHOLD=0.40
-
-# Embedding Drift Detection (Patent Idea #3)
-DRIFT_ALPHA=0.30                # EWMA smoothing factor α
-DRIFT_POSE_YAW_MAX=25.0         # Max yaw angle limit (°)
-DRIFT_POSE_PITCH_MAX=20.0       # Max pitch angle limit (°)
-
-# EWMA Alert Thresholds
-DRIFT_WARN_THRESHOLD=0.15       # WARNING state cutoff
-DRIFT_CRITICAL_THRESHOLD=0.25   # CRITICAL state cutoff (Triggers SMTP Email)
-DRIFT_ALERT_THRESHOLD=0.35      # ALERT state cutoff (Triggers Re-Enroll Prompt)
+```
+BioSecure AI - GIrls Hostel/
+├── docs/                        # Complete System Documentation Hub
+│   ├── index.md                 # Documentation Portal Index
+│   ├── architecture.md          # Architecture & Multithreaded Camera Specs
+│   ├── api_reference.md         # Full REST & MJPEG API Specification
+│   ├── database.md              # SQLite Schema & Movement Log Tables
+│   ├── deployment.md            # Production Setup (Nginx, Gunicorn, Systemd)
+│   ├── ml_pipeline.md           # InsightFace 512D ML & EWMA Drift Math
+│   ├── user_guide.md            # Warden & Admin User Manual
+│   └── specifications/          # Archive & System Specs (PRD, SAD, TAD, FAD)
+├── nginx/                       # Reverse Proxy Configuration
+│   └── nginx.conf               # Production Nginx Config with Streaming Buffering
+├── scripts/                     # SQL Scripts & Schema Definitions
+│   └── girls_hostel_schema.sql  # Database Initialization Script
+├── src/                         # Application Source Code
+│   ├── blueprints/              # Modular Flask Blueprints (Routes & Handlers)
+│   │   ├── admin.py             # Admin Dashboard & Drift Routes
+│   │   ├── attendance.py        # Attendance Processing Routes
+│   │   ├── auth.py              # User Authentication & Login
+│   │   ├── hostel.py            # Hostel Warden & Live Video Feed Routes
+│   │   └── students.py          # Student Directory & Enrollment Routes
+│   ├── services/                # Core Business Services
+│   │   ├── curfew_service.py    # Curfew Rules & Violation Processor
+│   │   └── hostel_camera.py     # Multithreaded Camera Engine & Stream Manager
+│   ├── static/                  # Static Assets (CSS & JS)
+│   │   ├── css/style.css        # Enterprise Dark Glassmorphism Styles
+│   │   └── js/                  # Front-End Camera & UI Scripts
+│   ├── templates/               # Jinja2 HTML Templates
+│   ├── utils/                   # Database & Biometric Helper Utilities
+│   └── config.py                # Environment Configuration Constants
+├── tests/                       # Automated Test Suite (Pytest)
+│   ├── e2e/                     # End-to-End Test Scenarios
+│   └── unit/                    # Unit Tests for DB, Rules, and ML Helpers
+├── app.py                       # Application Entrypoint (Development)
+├── wsgi.py                      # WSGI Entrypoint (Production Gunicorn)
+├── gunicorn.conf.py             # Production Gunicorn Worker Settings
+├── start_hostel.sh              # Unix/Linux Startup Script
+├── start_hostel.bat             # Windows Startup Script
+└── requirements.txt             # Python Package Dependencies
 ```
 
 ---
 
-## 💻 Quick Start & Running Locally
+## 🚀 Quick Start Guide
 
-1. **Clone & Install Dependencies:**
-   ```bash
-   git clone https://github.com/ArnavPundir22/Face-Attendance-System-Web-Version.git
-   cd Face-Attendance-System-Web-Version
-   python3 -m venv .venv && source .venv/bin/activate
-   pip install -r requirements.txt
-   ```
+### Prerequisites
+* Python 3.10+
+* OpenCV system dependencies (`libgl1-mesa-glx`, `libglib2.0-0` on Linux)
+* Webcam or host video device
 
-2. **Set Up Environment Variables:**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your Supabase credentials
-   ```
+### 1. Clone & Setup Virtual Environment
+```bash
+git clone https://github.com/ArnavPundir22/BioSecure-AI---girls-Hostel-COER.git
+cd "BioSecure AI - GIrls Hostel"
 
-3. **Run Dev Server:**
-   ```bash
-   python app.py
-   ```
-   Access the web app at `http://localhost:5000`.
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
 
+### 2. Environment Configuration
+Copy the example environment configuration:
+```bash
+cp .env.example .env
+```
+
+### 3. Run Development Server
+```bash
+# Using startup script
+chmod +x start_hostel.sh
+./start_hostel.sh
+
+# Or directly with Python
+python app.py
+```
+Access the dashboard at `http://localhost:5000`.
+
+---
+
+## ⚙️ Production Deployment
+
+For enterprise production deployments, use Gunicorn behind an Nginx reverse proxy:
+
+```bash
+# Start Gunicorn WSGI Server
+gunicorn -c gunicorn.conf.py wsgi:app
+```
+
+### Nginx Streaming Optimization:
+Ensure `proxy_buffering off;` is set in Nginx for `/hostel/video_feed` to prevent frame buffering delay:
+```nginx
+location /hostel/video_feed {
+    proxy_pass http://127.0.0.1:5000;
+    proxy_buffering off;
+    proxy_cache off;
+    proxy_set_header Connection '';
+    proxy_http_version 1.1;
+    chunked_transfer_encoding off;
+}
+```
+
+---
+
+## 🧪 Testing & Quality Assurance
+
+Run the automated Pytest test suite:
+```bash
+# Execute unit and end-to-end tests
+pytest
+```
+
+---
+
+## 📚 Documentation Index
+
+For detailed technical specifications, explore the [`docs/`](file:///home/dell/BioSecure%20AI%20-%20GIrls%20Hostel/docs) hub:
+* 📖 **[Documentation Hub Index](file:///home/dell/BioSecure%20AI%20-%20GIrls%20Hostel/docs/index.md)**
+* 🏗️ **[System Architecture & Multithreading Guide](file:///home/dell/BioSecure%20AI%20-%20GIrls%20Hostel/docs/architecture.md)**
+* 🔌 **[API Reference Guide](file:///home/dell/BioSecure%20AI%20-%20GIrls%20Hostel/docs/api_reference.md)**
+* 🗄️ **[Database & Movement Logs Schema](file:///home/dell/BioSecure%20AI%20-%20GIrls%20Hostel/docs/database.md)**
+* 🌍 **[Production Deployment & Nginx Guide](file:///home/dell/BioSecure%20AI%20-%20GIrls%20Hostel/docs/deployment.md)**
+* 📑 **[Specifications Directory](file:///home/dell/BioSecure%20AI%20-%20GIrls%20Hostel/docs/specifications)**
+
+---
+
+## 📄 License & Intellectual Property
+
+Copyright © 2026 COER University, Roorkee. All Rights Reserved.  
+*BioSecure AI — Girls Hostel Security System* contains patent-pending biometric embedding drift accumulation technology.

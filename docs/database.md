@@ -1,175 +1,118 @@
-# 🗄️ Database & pgvector Guide
+# 🗄️ Database Schema & Storage Architecture
 
-BioSecure AI relies on **Supabase (PostgreSQL)** for identity, student records, face embeddings storage, attendance logging, and individual **Biometric Embedding Drift Tracking (2026 Patent Application)**.
+BioSecure AI utilizes **SQLite with Write-Ahead Logging (WAL) Mode** (`PRAGMA journal_mode=WAL`) for ultra-fast, zero-latency local database storage. The database manages student profiles, face embeddings, gate entry/exit movement logs, EWMA embedding drift metrics, and curfew violation records.
 
 ---
 
-## 📊 Database Schema Layout
-
-Below is the entity-relationship diagram illustrating the schema relations:
+## 📊 Entity Relationship Diagram
 
 ```mermaid
 erDiagram
-    profiles ||--o{ student_profiles : registers
-    student_profiles ||--o{ attendance_logs : has
-    student_profiles ||--o{ drift_logs : tracks
-    profiles {
-        uuid id PK
-        varchar email
-        varchar role
+    students ||--o{ movement_logs : logs
+    students ||--o{ drift_logs : tracks
+    curfew_rules ||--o{ curfew_violations : triggers
+
+    students {
+        text student_id PK
+        text name
+        text roll_number
+        text room_number
+        text current_status "IN / OUT"
+        blob embedding "512-dimensional ArcFace"
+        real current_ewma_drift
+        text drift_status "HEALTHY / WARNING / CRITICAL / ALERT"
+        text created_at
     }
-    student_profiles {
-        uuid id PK
-        varchar name
-        varchar roll_number
-        vector embedding "512-dimensional"
-        float current_ewma_drift
-        varchar drift_alert_level "HEALTHY / WARNING / CRITICAL / ALERT"
-        timestamp created_at
+
+    movement_logs {
+        integer id PK
+        text student_id FK
+        text direction "IN / OUT"
+        text camera_id "CAM_01 / CAM_02"
+        text timestamp
+        integer is_verified "1 / 0"
     }
-    attendance_logs {
-        bigint id PK
-        uuid student_id FK
-        timestamp timestamp
-        varchar status "Present / Absent"
-    }
+
     drift_logs {
-        bigint id PK
-        uuid student_id FK
-        timestamp timestamp
-        float instantaneous_drift
-        float ewma_drift
-        float yaw_angle
-        float pitch_angle
-        varchar status "OK / POSE_REJECTED / CRITICAL_SENT / ALERT"
+        integer id PK
+        text student_id FK
+        real instantaneous_drift
+        real ewma_drift
+        real yaw_angle
+        real pitch_angle
+        text status "OK / POSE_REJECTED / ALERT"
+        text timestamp
+    }
+
+    curfew_rules {
+        integer id PK
+        text curfew_name
+        text start_time "22:00:00"
+        text end_time "06:00:00"
+        integer is_active
     }
 ```
 
 ---
 
-## 🛠️ PostgreSQL Table Definitions
-
-Here are the complete SQL schema statements:
+## 🛠️ SQLite WAL Table Schema Definition (`scripts/girls_hostel_schema.sql`)
 
 ```sql
--- 1. Enable pgvector extension
-CREATE EXTENSION IF NOT EXISTS vector;
+PRAGMA journal_mode=WAL;
+PRAGMA busy_timeout=5000;
 
--- 2. Create student profiles table with EWMA drift tracking
-CREATE TABLE public.student_profiles (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    name VARCHAR(255) NOT NULL,
-    roll_number VARCHAR(100) UNIQUE NOT NULL,
-    embedding VECTOR(512),                           -- ArcFace 512D facial embedding
-    current_ewma_drift FLOAT DEFAULT 0.0,            -- Running EWMA drift score (Patent #3)
-    drift_alert_level VARCHAR(50) DEFAULT 'HEALTHY',  -- HEALTHY / WARNING / CRITICAL / ALERT
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+-- 1. Student Master Table
+CREATE TABLE IF NOT EXISTS students (
+    student_id TEXT PRIMARY KEY,
+    name TEXT NOT NULL,
+    roll_number TEXT UNIQUE NOT NULL,
+    room_number TEXT,
+    branch TEXT DEFAULT 'CSE',
+    gmail TEXT,
+    current_status TEXT DEFAULT 'IN',  -- IN / OUT
+    embedding BLOB,                    -- 512D ArcFace normalized float32 array
+    current_ewma_drift REAL DEFAULT 0.0,
+    drift_status TEXT DEFAULT 'HEALTHY',-- HEALTHY / WARNING / CRITICAL / ALERT
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
--- Create HNSW Index for cosine distance calculations
-CREATE INDEX ON public.student_profiles 
-USING hnsw (embedding vector_cosine_ops);
-
--- 3. Create attendance logs table
-CREATE TABLE public.attendance_logs (
-    id BIGSERIAL PRIMARY KEY,
-    student_id UUID NOT NULL REFERENCES public.student_profiles(id) ON DELETE CASCADE,
-    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(50) NOT NULL DEFAULT 'Present'
+-- 2. Movement Entry/Exit Logs Table
+CREATE TABLE IF NOT EXISTS movement_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id TEXT NOT NULL,
+    direction TEXT NOT NULL,           -- IN / OUT
+    camera_id TEXT NOT NULL,            -- CAM_01 (Entry) / CAM_02 (Exit)
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    is_verified INTEGER DEFAULT 1,
+    FOREIGN KEY(student_id) REFERENCES students(student_id)
 );
 
--- 4. Create drift logs history table (Patent #3 Engine)
-CREATE TABLE public.drift_logs (
-    id BIGSERIAL PRIMARY KEY,
-    student_id UUID NOT NULL REFERENCES public.student_profiles(id) ON DELETE CASCADE,
-    timestamp TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    instantaneous_drift FLOAT NOT NULL,
-    ewma_drift FLOAT NOT NULL,
-    yaw_angle FLOAT,
-    pitch_angle FLOAT,
-    status VARCHAR(50) NOT NULL DEFAULT 'OK'
+-- 3. Biometric Drift History Logs
+CREATE TABLE IF NOT EXISTS drift_logs (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    student_id TEXT NOT NULL,
+    instantaneous_drift REAL NOT NULL,
+    ewma_drift REAL NOT NULL,
+    yaw_angle REAL,
+    pitch_angle REAL,
+    status TEXT DEFAULT 'OK',
+    timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(student_id) REFERENCES students(student_id)
+);
+
+-- 4. Curfew Management Rules
+CREATE TABLE IF NOT EXISTS curfew_rules (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    curfew_name TEXT NOT NULL,
+    start_time TEXT NOT NULL,           -- e.g. "22:00"
+    end_time TEXT NOT NULL,             -- e.g. "06:00"
+    is_active INTEGER DEFAULT 1
 );
 ```
 
 ---
 
-## 🔍 Vector Similarity RPC Function (`FACE_MATCH_THRESHOLD = 0.40`)
+## ⚡ Concurrency & Performance Settings
 
-To identify faces in milliseconds, the Flask backend executes a custom PostgreSQL RPC function performing Cosine distance lookups:
-
-```sql
-CREATE OR REPLACE FUNCTION public.match_face(
-    query_embedding VECTOR(512),
-    match_threshold FLOAT DEFAULT 0.40,
-    match_count INT DEFAULT 1
-)
-RETURNS TABLE (
-    id UUID,
-    name VARCHAR(255),
-    roll_number VARCHAR(100),
-    similarity FLOAT
-)
-LANGUAGE plpgsql
-SECURITY DEFINER
-AS $$
-BEGIN
-    RETURN QUERY
-    SELECT 
-        sp.id, 
-        sp.name, 
-        sp.roll_number, 
-        1 - (sp.embedding <=> query_embedding) AS similarity
-    FROM public.student_profiles sp
-    WHERE 1 - (sp.embedding <=> query_embedding) >= match_threshold
-    ORDER BY sp.embedding <=> query_embedding ASC
-    LIMIT match_count;
-END;
-$$;
-```
-
----
-
-## 🛡️ Row Level Security (RLS) Policies
-
-To protect student biometric data (512D ArcFace embeddings) and sensitive student information (`gmail`, `name`, enrollment details), Row Level Security is active on Supabase:
-
-### SQL Security Enforcement Script (`scripts/fix_supabase_security.sql`)
-
-```sql
--- 1. Enable RLS on all tables
-ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.attendance ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.embedding_health ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.academic_structure ENABLE ROW LEVEL SECURITY;
-
--- 2. Revoke default public/anon direct access
-REVOKE ALL ON ALL TABLES IN SCHEMA public FROM anon;
-
--- 3. Create RLS Policies
--- 'students' Table: Authenticated read-only; anon access denied
-CREATE POLICY "Authenticated users view students" 
-    ON public.students FOR SELECT TO authenticated USING (true);
-
--- 'attendance' Table: Authenticated read-only; anon access denied
-CREATE POLICY "Authenticated users view attendance" 
-    ON public.attendance FOR SELECT TO authenticated USING (true);
-
--- 'academic_structure' Table: Authenticated read-only
-CREATE POLICY "Authenticated read academic_structure" 
-    ON public.academic_structure FOR SELECT TO authenticated USING (true);
-
--- 'embedding_health' Table: Restricted exclusively to service_role (bypasses RLS)
-```
-
-### Policy Matrix & Service Role Privileges
-
-| Table | `anon` Access | `authenticated` Access | `service_role` (Flask Backend) |
-|---|---|---|---|
-| `students` | **DENIED** | `SELECT` | **FULL (ALL)** |
-| `attendance` | **DENIED** | `SELECT` | **FULL (ALL)** |
-| `embedding_health` | **DENIED** | **DENIED** | **FULL (ALL)** |
-| `academic_structure` | **DENIED** | `SELECT` | **FULL (ALL)** |
-
-> [!NOTE]
-> The Flask application uses `SUPABASE_SERVICE_ROLE_KEY` (`supabase_admin` in `src/utils/db.py`), which natively bypasses RLS in Supabase. Backend operations continue operating with full access while public REST API endpoints are fully secured.
-
+* **Journal Mode (`WAL`)**: Write-Ahead Logging allows background AI worker threads to write movement logs while web routes perform concurrent reads without lock contention.
+* **Busy Timeout (`5000ms`)**: Ensures database connections wait up to 5 seconds if a transaction is being written, preventing `database is locked` exceptions.

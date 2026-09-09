@@ -1,102 +1,117 @@
 # 🌍 Production Deployment Guide
 
-This guide details instructions on how to configure and deploy the stateless **BioSecure AI** application in production environments (VPS, containerized environments, or PaaS services like Render/Railway).
+This document provides production setup instructions for **BioSecure AI — Girls Hostel Security System** using **Gunicorn**, **Nginx**, and **Systemd** on Linux production servers.
 
 ---
 
-## 🛠️ Environment Variables Configuration
+## 🛠️ Environment Variables (.env)
 
-Ensure the following variables are configured in your production hosting panel or `.env` file:
+Create a production `.env` file from `.env.example`:
 
 ```ini
 # Flask Secrets
-FLASK_SECRET_KEY="your-super-secret-random-hex"
+SECRET_KEY="your-secure-production-random-secret"
 
-# Supabase Configurations
-SUPABASE_URL="https://your-project.supabase.co"
-SUPABASE_SERVICE_ROLE_KEY="eyJhbG..."
-SUPABASE_ANON_KEY="eyJhbG..."
-
-# InsightFace Context Settings
+# InsightFace Execution Device
 # 0 = GPU Execution, -1 = CPU Execution (Default: -1)
 INSIGHTFACE_CTX_ID=-1
 
-# Tuneable Parameters
-FACE_MATCH_THRESHOLD=0.3
-REATTENDANCE_INTERVAL_MINUTES=10
+# Face Matching & Cooldown Parameters
+HIGH_CONFIDENCE_THRESHOLD=0.36
+MIN_MATCH_THRESHOLD=0.28
+COOLDOWN_SECONDS=15.0
+
+# Curfew Configuration
+CURFEW_START_TIME="22:00"
+CURFEW_END_TIME="06:00"
 ```
 
 ---
 
-## 🔒 Database Security & RLS Configuration
-
-To prevent unauthorized public access to student biometric embeddings and PII, ensure Row Level Security (RLS) is enabled on your Supabase project (`avznrudspncnjbqersyg`):
-
-1. Log in to [Supabase Dashboard](https://supabase.com/dashboard).
-2. Open your project -> navigate to **SQL Editor**.
-3. Copy and execute the security script located at [`scripts/fix_supabase_security.sql`](file:///home/dell/Face-Attendance-System-Web-Version/scripts/fix_supabase_security.sql).
-4. Verify that **Advisors** -> **Security** shows zero `rls_disabled_in_public` or `sensitive_columns_exposed` warnings.
-
-
----
-
-## 🚀 Deployment on a Linux VPS (Gunicorn + Nginx + Systemd)
+## 🚀 Production Deployment Stack
 
 ### 1. Install System Dependencies
-Make sure Python 3.10+, virtual environment libraries, and system dependencies for OpenCV are present:
+Install Python 3.10+, virtual environment tools, and OpenCV system packages on Ubuntu/Debian:
 ```bash
 sudo apt update
 sudo apt install -y python3-pip python3-venv libgl1-mesa-glx libglib2.0-0 nginx
 ```
 
-### 2. Configure the Systemd Service
-Create a systemd service file `/etc/systemd/system/biosecure.service`:
+### 2. Prepare Virtual Environment & Dependencies
+```bash
+cd "/var/www/BioSecure AI - GIrls Hostel"
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+### 3. Configure Systemd Service Daemon (`/etc/systemd/system/biosecure-hostel.service`)
 
 ```ini
 [Unit]
-Description=BioSecure AI Flask Application Daemon
+Description=BioSecure AI Girls Hostel Warden Platform
 After=network.target
 
 [Service]
-User=www-data
-WorkingDirectory=/var/www/Face-Attendance-System-Web-Version
-ExecStart=/var/www/Face-Attendance-System-Web-Version/.venv/bin/gunicorn wsgi:app --config gunicorn.conf.py
+User=dell
+WorkingDirectory=/var/www/BioSecure AI - GIrls Hostel
+ExecStart=/var/www/BioSecure AI - GIrls Hostel/.venv/bin/gunicorn -c gunicorn.conf.py wsgi:app
 Restart=always
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
 
 [Install]
 WantedBy=multi-user.target
 ```
 
-Enable and start the daemon:
+Enable and start the service:
 ```bash
 sudo systemctl daemon-reload
-sudo systemctl enable biosecure
-sudo systemctl start biosecure
+sudo systemctl enable biosecure-hostel
+sudo systemctl start biosecure-hostel
 ```
 
-### 3. Setup Nginx Reverse Proxy
-Add a virtual server configuration in `/etc/nginx/sites-available/biosecure`:
+---
+
+## 🌐 Nginx Reverse Proxy Configuration (`nginx/nginx.conf`)
+
+For real-time MJPEG camera streaming (`/hostel/video_feed`), **Nginx proxy buffering must be disabled** to stream frames without latency.
+
+Create `/etc/nginx/sites-available/biosecure-hostel`:
 
 ```nginx
 server {
     listen 80;
-    server_name yourdomain.com;
+    server_name hostel.coer.ac.in;
 
-    client_max_body_size 20M; # Allocate enough buffer for group photo uploads
+    client_max_body_size 50M;
 
+    # General Route Proxy
     location / {
-        proxy_pass http://127.0.0.1:8000;
+        proxy_pass http://127.0.0.1:5000;
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
+
+    # High-FPS Unbuffered MJPEG Camera Stream
+    location /hostel/video_feed {
+        proxy_pass http://127.0.0.1:5000;
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_set_header Connection '';
+        proxy_http_version 1.1;
+        chunked_transfer_encoding off;
+        proxy_read_timeout 86400s;
+    }
 }
 ```
 
-Link the file and restart Nginx:
+Enable Nginx configuration and reload:
 ```bash
-sudo ln -s /etc/nginx/sites-available/biosecure /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/biosecure-hostel /etc/nginx/sites-enabled/
 sudo nginx -t
-sudo systemctl restart nginx
+sudo systemctl reload nginx
 ```

@@ -43,5 +43,8 @@ env/
 .DS_Store
 Thumbs.db
 
-# Logs
+# Logs & Agent Metadata
 *.log
+.agents/
+.pytest_cache/
+/tmp/hostel_*
