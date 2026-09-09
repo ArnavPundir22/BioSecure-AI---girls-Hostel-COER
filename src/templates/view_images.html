@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Attendance Image Viewer — BioSecure AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="pb-24 md:pb-8 flex flex-col md:flex-row">
+
+  <!-- Desktop Left Sidebar (Desktop Only) -->
+  <aside class="hidden md:flex flex-col fixed top-0 left-0 h-screen w-64 bg-[#0b1326]/75 backdrop-blur-xl border-r border-white/10 p-6 z-50">
+    <div class="flex items-center gap-3 mb-8">
+      <i data-lucide="scan-face" class="w-8 h-8 text-blue-500"></i>
+      <h1 class="font-geist text-xl font-bold text-blue-400 tracking-tight">BioSecure AI</h1>
+    </div>
+
+    <div class="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 mb-8 self-start">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span class="font-geist text-xs font-semibold text-emerald-400 uppercase tracking-wider">SYSTEM LIVE</span>
+    </div>
+
+    <nav class="flex-1 flex flex-col gap-2">
+      <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-gray-300 hover:bg-white/5">
+        <i data-lucide="home" class="w-5 h-5"></i>
+        <span>Home</span>
+      </a>
+      <a href="/viewer" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-gray-300 hover:bg-white/5">
+        <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+        <span>View Records</span>
+      </a>
+      <a href="/students" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-gray-300 hover:bg-white/5">
+        <i data-lucide="users" class="w-5 h-5"></i>
+        <span>All Students</span>
+      </a>
+      <a href="/add_student" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-gray-300 hover:bg-white/5">
+        <i data-lucide="user-plus" class="w-5 h-5"></i>
+        <span>Add Student</span>
+      </a>
+      {% if session_is_admin %}
+      <a href="/admin" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all bg-blue-500/10 text-blue-400 border border-blue-500/20">
+        <i data-lucide="settings" class="w-5 h-5"></i>
+        <span>Admin Portal</span>
+      </a>
+      {% endif %}
+    </nav>
+
+    <div class="pt-6 border-t border-white/10 flex flex-col gap-4">
+      <div class="flex flex-col">
+        <span class="text-xs text-gray-500">Logged in as</span>
+        <span class="text-sm font-semibold text-gray-200">{{ session_username }}</span>
+      </div>
+      <a href="/logout" class="btn-danger-glass w-full py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-2">
+        <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- TopAppBar (Mobile Only) -->
+  <header class="fixed top-0 left-0 w-full z-50 flex md:hidden justify-between items-center px-6 py-3 bg-[#0b1326]/70 backdrop-blur-xl border-b border-white/10 shadow-lg">
+    <div class="flex items-center gap-3">
+      <i data-lucide="scan-face" class="w-8 h-8 text-blue-500"></i>
+      <h1 class="font-geist text-xl font-bold text-blue-400 tracking-tight">BioSecure AI</h1>
+    </div>
+    
+    <div class="flex items-center gap-4">
+      <a href="/logout" class="btn-danger-glass px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2">
+        <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+      </a>
+    </div>
+  </header>
+
+  <!-- BottomNavBar (Mobile Only) -->
+  <nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-safe md:hidden h-16 bg-[#131b2e]/85 backdrop-blur-lg border-t border-white/10 shadow-2xl">
+    <a class="flex flex-col items-center justify-center text-xs font-medium transition-all text-gray-400 hover:text-blue-300" href="/">
+      <i data-lucide="home" class="w-5 h-5 mb-0.5"></i>
+      <span>Home</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-xs font-medium transition-all text-gray-400 hover:text-blue-300" href="/viewer">
+      <i data-lucide="bar-chart-2" class="w-5 h-5 mb-0.5"></i>
+      <span>Records</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-xs font-medium transition-all text-gray-400 hover:text-blue-300" href="/students">
+      <i data-lucide="users" class="w-5 h-5 mb-0.5"></i>
+      <span>Students</span>
+    </a>
+    <a class="flex flex-col items-center justify-center text-xs font-medium transition-all text-gray-400 hover:text-blue-300" href="/add_student">
+      <i data-lucide="user-plus" class="w-5 h-5 mb-0.5"></i>
+      <span>Add</span>
+    </a>
+    {% if session_is_admin %}
+    <a class="flex flex-col items-center justify-center text-xs font-medium transition-all text-blue-400" href="/admin">
+      <i data-lucide="settings" class="w-5 h-5 mb-0.5"></i>
+      <span>Admin</span>
+    </a>
+    {% endif %}
+  </nav>
+
+  <main class="w-full flex-1 p-4 sm:p-6 max-w-6xl mx-auto mt-24 space-y-6 md:mt-8 md:pl-72">
+
+    <!-- Secondary Navigation -->
+    <div class="glass-panel p-4 rounded-xl flex flex-wrap items-center justify-between gap-4 inner-glow">
+      <div class="flex items-center gap-2">
+        <i data-lucide="camera" class="w-6 h-6 text-blue-500"></i>
+        <h2 class="text-lg font-bold font-geist text-white">Attendance Image Gallery</h2>
+      </div>
+      <a href="/admin" class="btn-secondary-glass px-4 py-2 rounded-lg text-xs font-semibold flex items-center gap-2">
+        <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Back to Dashboard
+      </a>
+    </div>
+
+    <!-- FILTER SECTION -->
+    <div class="glass-panel p-6 rounded-2xl inner-glow flex flex-wrap gap-4 items-end shadow-xl">
+      <div class="flex-1 min-w-[200px]">
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Scan Date</label>
+        <input type="date" id="date" class="input-dark-glass w-full rounded-lg px-4 py-2.5 text-sm text-white">
+      </div>
+
+      <div class="flex-1 min-w-[200px]">
+        <label class="block text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Lecture Name</label>
+        <input type="text" id="lecture" placeholder="e.g. DBMS" class="input-dark-glass w-full rounded-lg px-4 py-2.5 text-sm text-white">
+      </div>
+
+      <button onclick="loadImages()" class="btn-primary-glass px-6 py-3 rounded-lg text-sm font-semibold flex items-center gap-2">
+        <i data-lucide="search" class="w-4 h-4"></i> Search Scans
+      </button>
+    </div>
+
+    <!-- GALLERY -->
+    <div id="gallery" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6"></div>
+
+  </main>
+
+  <script>
+    lucide.createIcons();
+
+    async function loadImages() {
+      const date = document.getElementById('date').value;
+      const lecture = document.getElementById('lecture').value;
+
+      const url = `/admin/get_images?date=${date}&lecture=${lecture}`;
+      const res = await fetch(url);
+      const images = await res.json();
+
+      const gallery = document.getElementById('gallery');
+      gallery.innerHTML = "";
+
+      if (images.length === 0) {
+        gallery.innerHTML = `
+          <div class="col-span-full py-12 text-center">
+            <i data-lucide="image-off" class="w-12 h-12 text-gray-600 mx-auto mb-3"></i>
+            <p class="text-gray-450 font-geist text-sm">No attendance capture images found for current filters</p>
+          </div>
+        `;
+        lucide.createIcons();
+        return;
+      }
+
+      images.forEach(img => {
+        const div = document.createElement("div");
+        div.className = "glass-panel p-3 rounded-2xl inner-glow flex flex-col justify-between shadow-lg overflow-hidden group";
+
+        const imageContainer = document.createElement("div");
+        imageContainer.className = "rounded-xl overflow-hidden relative aspect-video bg-black/20 border border-white/5";
+
+        const image = document.createElement("img");
+        image.src = img;
+        image.className = "w-full h-full object-cover cursor-pointer group-hover:scale-105 transition-transform duration-300";
+        image.onclick = () => window.open(img, "_blank");
+
+        imageContainer.appendChild(image);
+        div.appendChild(imageContainer);
+
+        // Parse path details to display clean label
+        try {
+          const filename = img.split('/').pop();
+          const label = document.createElement("p");
+          label.className = "text-[11px] font-semibold text-gray-400 font-geist mt-3 truncate px-1";
+          label.textContent = filename;
+          div.appendChild(label);
+        } catch(e) {}
+
+        gallery.appendChild(div);
+      });
+      lucide.createIcons();
+    }
+  </script>
+  <script src="{{ url_for('static', filename='js/offline-detector.js') }}"></script>
+</body>
+</html>

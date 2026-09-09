@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curfew Management — BioSecure AI Girls Hostel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased pb-24 md:pb-8">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-200 shadow-sm">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                    BioSecure AI <span class="text-xs px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 font-semibold">GIRLS HOSTEL</span>
+                </h1>
+                <p class="text-xs text-slate-500">Isolated Schema Scope: <code class="text-amber-600 font-mono font-semibold">girls_hostel</code></p>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="hidden md:flex items-center space-x-1 bg-slate-100 p-1.5 rounded-xl border border-slate-200 text-xs">
+            <a href="/hostel/" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Live Monitor
+            </a>
+            <a href="/hostel/students" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
+                <i data-lucide="users" class="w-4 h-4"></i> Student Directory
+            </a>
+            <a href="/hostel/logs" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
+                <i data-lucide="list" class="w-4 h-4"></i> Movement Logs
+            </a>
+            <a href="/hostel/curfew" class="px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold shadow-sm flex items-center gap-1.5">
+                <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
+            </a>
+        </nav>
+
+        <div class="flex items-center space-x-4">
+            <div class="text-xs font-mono bg-rose-50 text-rose-700 px-3 py-1.5 rounded-lg border border-rose-200 font-semibold flex items-center gap-1.5 shadow-sm">
+                <i data-lucide="alert-triangle" class="w-4 h-4"></i> Curfew Window: 17:00 - 19:30 PM
+            </div>
+
+            <!-- Mobile Menu Toggle Button (Mobile Only) -->
+            <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 transition">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Dropdown Navigation Menu -->
+    <div id="mobileMenu" class="hidden md:hidden bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3 space-y-2 text-sm shadow-md">
+        <a href="/hostel/" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Live Monitor
+        </a>
+        <a href="/hostel/students" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
+            <i data-lucide="users" class="w-4 h-4"></i> Student Directory & Registration
+        </a>
+        <a href="/hostel/logs" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
+            <i data-lucide="list" class="w-4 h-4"></i> Movement Logs
+        </a>
+        <a href="/hostel/curfew" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 font-semibold">
+            <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
+        </a>
+    </div>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+
+        <div>
+            <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Curfew Compliance & Overdue Alert Center</h2>
+            <p class="text-sm text-slate-500">Automated system scans students currently <code class="text-amber-600 font-mono font-semibold">OUT</code> past the 7:30 PM deadline</p>
+        </div>
+
+        <!-- Curfew Configuration Info -->
+        <div class="glass-panel p-6 rounded-2xl bg-indigo-50/60 border border-indigo-200 grid grid-cols-1 md:grid-cols-3 gap-6 shadow-sm">
+            <div>
+                <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">System Monitoring Start</span>
+                <div class="text-xl font-bold text-slate-900 mt-1">5:00 PM (17:00)</div>
+                <p class="text-xs text-slate-500 mt-0.5">System begins tracking hostel exits</p>
+            </div>
+            <div>
+                <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Curfew Deadline Cutoff</span>
+                <div class="text-xl font-bold text-rose-700 mt-1">7:30 PM (19:30)</div>
+                <p class="text-xs text-slate-500 mt-0.5">All students must return by this time</p>
+            </div>
+            <div>
+                <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Overdue Escalation</span>
+                <div class="text-xl font-bold text-amber-700 mt-1">Automated Parent Call</div>
+                <p class="text-xs text-slate-500 mt-0.5">Alerts dispatched immediately</p>
+            </div>
+        </div>
+
+        <!-- Active Overdue Alerts -->
+        <div class="glass-panel p-6 rounded-2xl space-y-4 bg-white border border-rose-200 shadow-sm">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+                <h3 class="text-lg font-bold text-rose-800 flex items-center gap-2">
+                    <i data-lucide="bell-ring" class="w-5 h-5 text-rose-600 animate-bounce"></i> Active Overdue Curfew Breaches
+                </h3>
+                <button onclick="loadCurfewData()" class="text-xs px-3 py-1.5 rounded-lg bg-rose-50 text-rose-700 hover:bg-rose-100 transition border border-rose-200 font-semibold shadow-sm">
+                    Refresh Alerts
+                </button>
+            </div>
+
+            <div id="curfewAlertsContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Dynamic curfew alert cards -->
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        lucide.createIcons();
+
+        async function loadCurfewData() {
+            try {
+                const res = await fetch('/hostel/api/overdue_alerts');
+                const data = await res.json();
+                const container = document.getElementById('curfewAlertsContainer');
+
+                if (data.alerts && data.alerts.length > 0) {
+                    container.innerHTML = data.alerts.map(a => {
+                        const sp = a.student_profiles || {};
+                        return `
+                            <div class="bg-white border border-rose-300 rounded-xl p-5 space-y-3 shadow-sm">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <h4 class="font-bold text-rose-800 text-lg">${sp.name || 'Unknown Student'}</h4>
+                                        <p class="text-xs text-slate-500 font-mono">Roll: ${sp.roll_number || 'N/A'} | Room: ${sp.room_number || 'N/A'}</p>
+                                    </div>
+                                    <span class="text-xs bg-rose-100 text-rose-800 px-3 py-1 rounded-full font-bold border border-rose-200 animate-pulse">
+                                        OVERDUE OUT
+                                    </span>
+                                </div>
+                                <div class="text-xs text-slate-700 space-y-1 bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                    <div>Parent Phone: <a href="tel:${sp.parent_contact}" class="text-indigo-600 font-mono font-bold underline text-sm">${sp.parent_contact || 'N/A'}</a></div>
+                                    <div>Curfew Window: <span class="text-slate-800 font-medium">17:00 - 19:30 PM</span></div>
+                                    <div>Alert Triggered: <span class="text-slate-500 font-mono">${new Date(a.alert_triggered_at).toLocaleString()}</span></div>
+                                </div>
+                                <button onclick="resolveCurfewAlert(${a.id})" class="w-full text-xs py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg transition shadow-sm">
+                                    Resolve Alert / Enter Warden Notes
+                                </button>
+                            </div>
+                        `;
+                    }).join('');
+                } else {
+                    container.innerHTML = `
+                        <div class="col-span-full text-center py-12 text-slate-500 bg-emerald-50/50 rounded-xl border border-emerald-200">
+                            <i data-lucide="check-circle-2" class="w-10 h-10 text-emerald-600 mx-auto mb-2"></i>
+                            <p class="text-base font-semibold text-slate-800">All Clear! Zero Curfew Violations.</p>
+                            <p class="text-xs text-slate-500">Every student is safely accounted for inside the hostel.</p>
+                        </div>
+                    `;
+                }
+            } catch (e) {
+                console.error("Error loading curfew data:", e);
+            }
+        }
+
+        async function resolveCurfewAlert(alertId) {
+            const notes = prompt("Enter warden resolution notes (e.g. Returned late with written leave permission):");
+            if (notes !== null) {
+                await fetch('/hostel/api/resolve_alert', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ alert_id: alertId, notes: notes })
+                });
+                loadCurfewData();
+            }
+        }
+
+        loadCurfewData();
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        }
+    </script>
+
+    <!-- Mobile Fixed Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 w-full z-50 flex md:hidden justify-around items-center bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl py-2 px-1 text-xs">
+        <a href="/hostel/" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-indigo-600 font-medium">
+            <i data-lucide="layout-dashboard" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[11px]">Monitor</span>
+        </a>
+        <a href="/hostel/students" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-indigo-600 font-medium">
+            <i data-lucide="users" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[11px]">Directory</span>
+        </a>
+        <a href="/hostel/logs" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-indigo-600 font-medium">
+            <i data-lucide="list" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[11px]">Logs</span>
+        </a>
+        <a href="/hostel/curfew" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-indigo-600 font-bold">
+            <i data-lucide="clock" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[11px]">Curfew</span>
+        </a>
+    </nav>
+</body>
+</html>
+

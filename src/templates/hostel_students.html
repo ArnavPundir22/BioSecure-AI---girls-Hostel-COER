@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Directory & Registration — BioSecure AI Girls Hostel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+        .guided-frame-wrapper {
+            position: relative;
+            overflow: hidden;
+            border-radius: 1rem;
+            background: #090d16;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.25);
+        }
+        .guided-oval-stencil {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 62%;
+            height: 72%;
+            border-radius: 50% / 46%;
+            pointer-events: none;
+            box-sizing: border-box;
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .guided-oval-stencil.state-searching {
+            border: 3px dashed rgba(99, 102, 241, 0.7);
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.2), inset 0 0 20px rgba(99, 102, 241, 0.1);
+            animation: stencil-pulse-blue 2s ease-in-out infinite;
+        }
+        .guided-oval-stencil.state-warning {
+            border: 3px solid #ef4444;
+            box-shadow: 0 0 30px rgba(239, 68, 68, 0.4), inset 0 0 25px rgba(239, 68, 68, 0.15);
+        }
+        .guided-oval-stencil.state-success {
+            border: 3.5px solid #10b981;
+            box-shadow: 0 0 35px rgba(16, 185, 129, 0.6), inset 0 0 30px rgba(16, 185, 129, 0.25);
+            animation: stencil-pulse-green 1s ease-in-out infinite;
+        }
+        @keyframes stencil-pulse-blue {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.85; }
+            50% { transform: translate(-50%, -50%) scale(1.02); opacity: 1; }
+        }
+        @keyframes stencil-pulse-green {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); }
+            50% { transform: translate(-50%, -50%) scale(1.03); }
+        }
+        .shutter-flash-overlay {
+            position: absolute;
+            inset: 0;
+            background-color: #ffffff;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 40;
+            transition: opacity 0.05s ease-out;
+        }
+        .shutter-flash-overlay.active {
+            opacity: 0.95;
+        }
+        .progress-ring-circle {
+            transition: stroke-dashoffset 0.1s linear, stroke 0.3s ease;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased pb-24 md:pb-8">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-200 shadow-sm">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                    BioSecure AI <span class="text-xs px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 font-semibold">GIRLS HOSTEL</span>
+                </h1>
+                <p class="text-xs text-slate-500">Isolated Schema Scope: <code class="text-amber-600 font-mono font-semibold">girls_hostel</code></p>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="hidden md:flex items-center space-x-1 bg-slate-100 p-1.5 rounded-xl border border-slate-200 text-xs">
+            <a href="/hostel/" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Live Monitor
+            </a>
+            <a href="/hostel/students" class="px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold shadow-sm flex items-center gap-1.5">
+                <i data-lucide="users" class="w-4 h-4"></i> Student Directory
+            </a>
+            <a href="/hostel/logs" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
+                <i data-lucide="list" class="w-4 h-4"></i> Movement Logs
+            </a>
+            <a href="/hostel/curfew" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
+                <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
+            </a>
+        </nav>
+
+        <div class="flex items-center space-x-4">
+            <button onclick="scrollToRegistration()" class="text-xs px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition flex items-center gap-2 shadow-md shadow-indigo-600/20">
+                <i data-lucide="user-plus" class="w-4 h-4"></i> Register Student Profile
+            </button>
+
+            <!-- Mobile Menu Toggle Button (Mobile Only) -->
+            <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 transition">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Dropdown Navigation Menu -->
+    <div id="mobileMenu" class="hidden md:hidden bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3 space-y-2 text-sm shadow-md">
+        <a href="/hostel/" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Live Monitor
+        </a>
+        <a href="/hostel/students" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 font-semibold">
+            <i data-lucide="users" class="w-4 h-4"></i> Student Directory & Registration
+        </a>
+        <a href="/hostel/logs" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
+            <i data-lucide="list" class="w-4 h-4"></i> Movement Logs
+        </a>
+        <a href="/hostel/curfew" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
+            <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
+        </a>
+    </div>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-6 py-8 space-y-10">
+
+        <!-- Section 1: Guided Registration Form Card -->
+        <section id="registrationSection" class="glass-panel p-6 sm:p-8 rounded-2xl bg-white border border-slate-200 shadow-xl space-y-6">
+            <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-200">
+                        <i data-lucide="user-plus" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-xl font-bold text-slate-900">Register Student Profile</h2>
+                        <p class="text-xs text-slate-500">Extract 512D InsightFace ArcFace biometric embedding into <code class="text-amber-600 font-mono font-semibold">girls_hostel.student_profiles</code></p>
+                    </div>
+                </div>
+                <span class="text-xs px-3 py-1 bg-emerald-100 text-emerald-800 rounded-full border border-emerald-200 font-mono font-bold">InsightFace ArcFace 512D</span>
+            </div>
+
+            <!-- Message Status Alert Box -->
+            <div id="messageBox" class="hidden p-4 rounded-xl text-xs font-semibold text-center border shadow-sm"></div>
+
+            <form id="studentRegistrationForm" enctype="multipart/form-data" class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                
+                <!-- Left Column: Photo Mode Selector & Guided Camera / File Upload -->
+                <div class="space-y-4">
+                    <!-- Photo Mode Tabs -->
+                    <div class="flex bg-slate-100 p-1.5 rounded-xl border border-slate-200 text-xs font-semibold">
+                        <button type="button" id="tabLiveCam" class="flex-1 py-2 rounded-lg bg-indigo-600 text-white flex items-center justify-center gap-1.5 shadow-sm transition-all">
+                            <i data-lucide="camera" class="w-4 h-4"></i> Guided Live Camera
+                        </button>
+                        <button type="button" id="tabFileUpload" class="flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition-all">
+                            <i data-lucide="upload" class="w-4 h-4"></i> Upload File
+                        </button>
+                    </div>
+
+                    <!-- Guided Live Camera Section -->
+                    <div id="guidedCamSection" class="space-y-3">
+                        <div id="guidedCameraContainer" class="guided-frame-wrapper relative w-full h-80 sm:h-96 rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 flex items-center justify-center shadow-inner">
+                            
+                            <!-- Live Camera Stream -->
+                            <video id="guidedVideo" class="w-full h-full object-cover scale-x-[-1]" autoplay playsinline muted></video>
+                            <canvas id="guidedCanvas" class="hidden"></canvas>
+
+                            <!-- Camera permission denied overlay -->
+                            <div id="cameraPermDenied" class="hidden absolute inset-0 flex flex-col items-center justify-center bg-slate-950/95 z-20 gap-3 p-4">
+                                <i data-lucide="camera-off" class="w-10 h-10 text-rose-400"></i>
+                                <p class="text-white font-semibold text-sm text-center">Camera Access Required</p>
+                                <p class="text-slate-400 text-xs text-center">Allow camera access in your browser's address bar,<br>or use the <strong class="text-white">Upload File</strong> tab to take a photo.</p>
+                                <button type="button" onclick="document.getElementById('tabFileUpload').click()" class="mt-2 text-xs px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition">
+                                    Switch to Upload File Tab
+                                </button>
+                            </div>
+
+                            <!-- Shutter Flash Effect Overlay -->
+                            <div id="shutterFlash" class="shutter-flash-overlay"></div>
+
+                            <!-- Guided Face Oval Stencil -->
+                            <div id="guidedStencil" class="guided-oval-stencil state-searching flex items-center justify-center">
+                                <div class="w-3 h-3 rounded-full border border-white/40 bg-white/20 animate-pulse"></div>
+                            </div>
+
+                            <!-- Guidance Status Badge at Top -->
+                            <div class="absolute top-3 inset-x-0 flex justify-center z-30 px-3">
+                                <div id="guidanceStatusBadge" class="px-4 py-1.5 rounded-full backdrop-blur-md bg-indigo-600/30 text-indigo-100 border border-indigo-400/40 text-xs font-semibold flex items-center gap-2 shadow-lg transition-all duration-300">
+                                    <i id="guidanceStatusIcon" data-lucide="scan" class="w-4 h-4"></i>
+                                    <span id="guidanceStatusText">Position face inside oval frame</span>
+                                </div>
+                            </div>
+
+                            <!-- Auto-Capture Progress Ring & Countdown (Top Right) -->
+                            <div class="absolute top-3 right-3 z-30 flex items-center justify-center w-10 h-10">
+                                <svg class="w-10 h-10">
+                                    <circle cx="20" cy="20" r="16" stroke="rgba(255,255,255,0.2)" stroke-width="3" fill="transparent" />
+                                    <circle id="autoCaptureRing" class="progress-ring-circle" cx="20" cy="20" r="16" stroke="#10b981" stroke-width="3" fill="transparent" stroke-dasharray="100.5" stroke-dashoffset="100.5" />
+                                </svg>
+                                <span id="autoCaptureCountdownText" class="absolute text-[10px] font-bold text-white"></span>
+                            </div>
+
+                            <!-- Bottom Controls inside video frame -->
+                            <div class="absolute bottom-3 inset-x-3 flex items-center justify-between z-30 gap-2">
+                                <label class="flex items-center gap-2 cursor-pointer bg-black/60 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-xs text-slate-300 hover:bg-black/80 transition-all">
+                                    <input type="checkbox" id="autoCaptureToggle" checked class="rounded border-slate-600 bg-slate-800 text-indigo-500 focus:ring-0 cursor-pointer" />
+                                    <span>Auto-Capture</span>
+                                </label>
+
+                                <select id="cameraSelect" class="hidden bg-black/60 backdrop-blur-md px-2 py-1.5 rounded-lg border border-white/10 text-[11px] text-slate-300 outline-none max-w-[130px] truncate"></select>
+
+                                <button type="button" id="manualSnapBtn" class="text-xs px-3.5 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition flex items-center gap-1.5 shadow-md">
+                                    <i data-lucide="camera" class="w-3.5 h-3.5"></i> Snap Photo
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Captured Preview Card (Hidden until photo taken) -->
+                        <div id="capturedPreview" class="hidden p-4 bg-emerald-50/80 rounded-2xl border border-emerald-200 flex flex-col items-center gap-3">
+                            <div class="relative w-full max-w-xs rounded-xl overflow-hidden border border-emerald-300 shadow-md">
+                                <img id="capturedImg" src="" alt="Captured Photo" class="w-full h-56 object-cover" />
+                                <div class="absolute top-2 right-2 px-2.5 py-1 bg-emerald-600 text-white rounded-full text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 shadow-md">
+                                    <i data-lucide="check-circle" class="w-3 h-3"></i> Guidelines Verified
+                                </div>
+                            </div>
+
+                            <div class="flex items-center gap-3 w-full max-w-xs">
+                                <button type="button" id="retakeBtn" class="flex-1 text-xs py-2 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 font-semibold transition flex items-center justify-center gap-1.5 shadow-sm">
+                                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Retake Photo
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Guided Camera Info Box -->
+                        <div class="p-3.5 rounded-xl bg-indigo-50 border border-indigo-100 text-xs text-slate-700 space-y-1">
+                            <span class="font-bold text-indigo-700 flex items-center gap-1 mb-1">
+                                <i data-lucide="info" class="w-3.5 h-3.5"></i> Auto-Capture Guidelines:
+                            </span>
+                            <ul class="list-disc list-inside space-y-0.5 text-[11px] text-slate-600">
+                                <li>Fit student face inside the target oval frame.</li>
+                                <li>Ensure single face & good ambient lighting.</li>
+                                <li>Hold still for 1 second — system auto-snaps reference!</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- File Upload Container (Toggled via tab) -->
+                    <div id="fileUploadSection" class="hidden space-y-3">
+                        <!-- Mobile: Take Photo directly -->
+                        <div class="flex flex-col sm:flex-row gap-2">
+                            <label class="flex-1 cursor-pointer">
+                                <div class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition shadow-md text-center">
+                                    <i data-lucide="camera" class="w-4 h-4"></i> Take Photo with Camera
+                                </div>
+                                <input type="file" id="facePhotoInput" name="face_photo" accept="image/*" capture="user"
+                                       class="hidden"
+                                       onchange="previewImage(event)">
+                            </label>
+                            <label class="flex-1 cursor-pointer">
+                                <div class="flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-white hover:bg-slate-50 border border-slate-300 text-slate-700 text-xs font-semibold transition shadow-sm text-center">
+                                    <i data-lucide="upload" class="w-4 h-4"></i> Upload from Gallery
+                                </div>
+                                <input type="file" id="facePhotoInputGallery" accept="image/*"
+                                       class="hidden"
+                                       onchange="handleGalleryUpload(event)">
+                            </label>
+                        </div>
+
+                        <div class="text-center p-4 bg-slate-50 rounded-xl border border-dashed border-slate-300 flex flex-col justify-center items-center min-h-[200px]">
+                            <img id="imagePreview" src="" alt="Preview" class="max-w-xs max-h-48 rounded-lg shadow-md hidden border border-slate-200 object-cover" />
+                            <p id="previewText" class="text-xs text-slate-500 my-2">Photo preview will appear here.</p>
+                        </div>
+
+                        <p class="text-xs text-slate-500 text-center">
+                            <i data-lucide="info" class="w-3 h-3 inline"></i>
+                            Works on all devices. No HTTPS required.
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: Student Metadata Form -->
+                <div class="space-y-4 flex flex-col justify-between">
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Student Full Name *</label>
+                            <input type="text" name="name" required placeholder="e.g. Ananya Sharma" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Roll / Student ID *</label>
+                                <input type="text" name="roll_number" required placeholder="e.g. 22001045" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Room Number *</label>
+                                <input type="text" name="room_number" required placeholder="e.g. A-304" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Hostel Block</label>
+                                <input type="text" name="hostel_block" value="Block-A" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Parent Phone *</label>
+                                <input type="tel" name="parent_contact" required placeholder="+91 9876543210" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Student Contact Phone</label>
+                            <input type="tel" name="student_contact" placeholder="+91 9123456789" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                        </div>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-200">
+                        <button type="submit" id="submitBtn" class="w-full text-xs font-bold py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-600/20">
+                            <i data-lucide="check" class="w-4 h-4"></i>
+                            Register Student & Extract 512D Embedding
+                        </button>
+                    </div>
+                </div>
+
+            </form>
+        </section>
+
+        <!-- Section 2: Enrolled Student Directory Grid -->
+        <section class="space-y-6">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900 tracking-tight">Enrolled Hostel Student Directory</h3>
+                    <p class="text-xs text-slate-500">Database Scope: <code class="text-amber-600 font-mono font-semibold">girls_hostel.student_profiles</code></p>
+                </div>
+                <div class="relative w-full md:w-72">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+                    <input type="text" id="searchInput" oninput="filterStudents()" placeholder="Search name, roll, room..." class="w-full bg-white border border-slate-300 rounded-xl pl-9 pr-4 py-2 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                </div>
+            </div>
+
+            <div id="studentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- Loaded dynamically -->
+            </div>
+        </section>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
+    <script src="{{ url_for('static', filename='js/guided-camera.js') }}"></script>
+    <script>
+        lucide.createIcons();
+
+        let allStudents = [];
+        let guidedCam = null;
+
+        document.addEventListener("DOMContentLoaded", function() {
+            // 1. Initialize Guided Camera System
+            if (window.GuidedCameraEngine) {
+                guidedCam = new window.GuidedCameraEngine({
+                    fileInputSelector: 'input[name="face_photo"]'
+                });
+
+                // Show camera permission denied overlay if camera fails to start
+                const origStartCamera = guidedCam.startCamera.bind(guidedCam);
+                guidedCam.startCamera = async function() {
+                    const permOverlay = document.getElementById('cameraPermDenied');
+                    if (permOverlay) permOverlay.classList.add('hidden');
+                    try {
+                        await origStartCamera();
+                        // If still no stream after attempt, camera was blocked
+                        setTimeout(() => {
+                            if (!guidedCam.stream && !guidedCam.isCaptured) {
+                                const overlay = document.getElementById('cameraPermDenied');
+                                if (overlay) overlay.classList.remove('hidden');
+                            }
+                        }, 2500);
+                    } catch(e) {
+                        const overlay = document.getElementById('cameraPermDenied');
+                        if (overlay) overlay.classList.remove('hidden');
+                    }
+                };
+
+                guidedCam.startCamera();
+            }
+
+            // 2. Tab Switching Logic
+            const tabLiveCam = document.getElementById('tabLiveCam');
+            const tabFileUpload = document.getElementById('tabFileUpload');
+            const guidedCamSection = document.getElementById('guidedCamSection');
+            const fileUploadSection = document.getElementById('fileUploadSection');
+
+            if (tabLiveCam && tabFileUpload) {
+                tabLiveCam.addEventListener('click', () => {
+                    tabLiveCam.className = "flex-1 py-2 rounded-lg bg-indigo-600 text-white flex items-center justify-center gap-1.5 shadow-sm transition-all";
+                    tabFileUpload.className = "flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition-all";
+                    guidedCamSection.classList.remove('hidden');
+                    fileUploadSection.classList.add('hidden');
+
+                    if (guidedCam && !guidedCam.stream && !guidedCam.isCaptured) {
+                        guidedCam.startCamera();
+                    }
+                });
+
+                tabFileUpload.addEventListener('click', () => {
+                    tabFileUpload.className = "flex-1 py-2 rounded-lg bg-indigo-600 text-white flex items-center justify-center gap-1.5 shadow-sm transition-all";
+                    tabLiveCam.className = "flex-1 py-2 rounded-lg text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 transition-all";
+                    fileUploadSection.classList.remove('hidden');
+                    guidedCamSection.classList.add('hidden');
+
+                    if (guidedCam) {
+                        guidedCam.stopCamera();
+                    }
+                });
+            }
+
+            // 3. Load Enrolled Student Directory
+            loadStudents();
+        });
+
+        function scrollToRegistration() {
+            document.getElementById('registrationSection').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function previewImage(event) {
+            const preview = document.getElementById('imagePreview');
+            const text = document.getElementById('previewText');
+            const file = event.target.files[0];
+            if (file) {
+                // Also copy to the main face_photo input so the form picks it up
+                const mainInput = document.getElementById('facePhotoInput');
+                if (mainInput && event.target !== mainInput) {
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    mainInput.files = dt.files;
+                }
+                const reader = new FileReader();
+                reader.onload = () => {
+                    preview.src = reader.result;
+                    preview.classList.remove('hidden');
+                    text.classList.add('hidden');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                preview.classList.add('hidden');
+                text.classList.remove('hidden');
+            }
+        }
+
+        function handleGalleryUpload(event) {
+            // Gallery input - copy file to the form's face_photo field and preview
+            const file = event.target.files[0];
+            if (file) {
+                const mainInput = document.getElementById('facePhotoInput');
+                if (mainInput) {
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    mainInput.files = dt.files;
+                }
+                previewImage(event);
+            }
+        }
+
+        document.getElementById("studentRegistrationForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const submitBtn = document.getElementById('submitBtn');
+            const formData = new FormData(form);
+
+            const photoFile = formData.get('face_photo');
+            if (!photoFile || photoFile.size === 0) {
+                showMessage("Please snap a face photo using Guided Camera or upload an image file first.", false);
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Extracting 512D ArcFace Embedding...';
+            lucide.createIcons();
+
+            try {
+                const response = await fetch("/hostel/api/register_student", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage(data.message || "Student profile successfully created!", true);
+                    form.reset();
+                    document.getElementById('imagePreview').classList.add('hidden');
+                    document.getElementById('imagePreview').src = '';
+                    document.getElementById('previewText').classList.remove('hidden');
+                    if (guidedCam) {
+                        guidedCam.resetToLiveStream();
+                    }
+                    loadStudents();
+                } else {
+                    showMessage(data.error || "Registration failed. Please check form details.", false);
+                }
+            } catch (err) {
+                console.error("Submission error:", err);
+                showMessage("Network error while submitting registration form.", false);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i data-lucide="check" class="w-4 h-4"></i> Register Student & Extract 512D Embedding';
+                lucide.createIcons();
+            }
+        });
+
+        function showMessage(msg, success) {
+            const box = document.getElementById("messageBox");
+            box.textContent = msg;
+            box.className = `p-4 mb-6 rounded-xl font-medium text-center shadow-sm text-xs ${
+                success 
+                ? "bg-emerald-100 text-emerald-800 border border-emerald-200" 
+                : "bg-rose-100 text-rose-800 border border-rose-200"
+            }`;
+            box.classList.remove("hidden");
+        }
+
+        async function loadStudents() {
+            try {
+                const res = await fetch('/hostel/api/students');
+                const data = await res.json();
+                allStudents = data.students || [];
+                renderStudents(allStudents);
+            } catch (e) {
+                console.error("Error loading students:", e);
+            }
+        }
+
+        function renderStudents(list) {
+            const grid = document.getElementById('studentsGrid');
+            if (list.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 text-xs">No student profiles found in girls_hostel schema.</div>';
+                return;
+            }
+
+            grid.innerHTML = list.map(s => {
+                const isOut = s.current_status === 'OUT';
+                return `
+                    <div class="glass-panel p-6 rounded-2xl space-y-4 bg-white border ${isOut ? 'border-amber-300 bg-amber-50/40' : 'border-slate-200'} shadow-sm hover:shadow-md transition">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center border border-indigo-200 text-base shadow-sm">
+                                    ${s.name.charAt(0)}
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 text-base">${s.name}</h3>
+                                    <p class="text-xs text-slate-500 font-mono">Roll: ${s.roll_number}</p>
+                                </div>
+                            </div>
+                            <span class="text-xs px-2.5 py-1 rounded-full font-bold ${isOut ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'}">
+                                ${s.current_status || 'IN'}
+                            </span>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-2 text-xs text-slate-600 pt-2 border-t border-slate-100">
+                            <div>Room: <span class="text-slate-900 font-semibold">${s.room_number}</span></div>
+                            <div>Block: <span class="text-slate-900 font-semibold">${s.hostel_block}</span></div>
+                            <div class="col-span-2">Parent Phone: <a href="tel:${s.parent_contact}" class="text-indigo-600 font-mono font-semibold underline">${s.parent_contact}</a></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterStudents() {
+            const q = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allStudents.filter(s => 
+                s.name.toLowerCase().includes(q) ||
+                s.roll_number.toLowerCase().includes(q) ||
+                s.room_number.toLowerCase().includes(q)
+            );
+            renderStudents(filtered);
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        }
+    </script>
+
+    <!-- Mobile Fixed Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 w-full z-50 flex md:hidden justify-around items-center bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl py-2 px-1 text-xs">
+        <a href="/hostel/" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-indigo-600 font-medium">
+            <i data-lucide="layout-dashboard" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[11px]">Monitor</span>
+        </a>
+        <a href="/hostel/students" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-indigo-600 font-bold">
+            <i data-lucide="users" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[11px]">Directory</span>
+        </a>
+        <a href="/hostel/logs" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-indigo-600 font-medium">
+            <i data-lucide="list" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[11px]">Logs</span>
+        </a>
+        <a href="/hostel/curfew" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-indigo-600 font-medium">
+            <i data-lucide="clock" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[11px]">Curfew</span>
+        </a>
+    </nav>
+</body>
+</html>
+
+

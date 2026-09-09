@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movement Logs — BioSecure AI Girls Hostel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        body {
+            background-color: #f8fafc;
+            color: #0f172a;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased pb-24 md:pb-8">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
+        <div class="flex items-center space-x-3">
+            <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-200 shadow-sm">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                    BioSecure AI <span class="text-xs px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 font-semibold">GIRLS HOSTEL</span>
+                </h1>
+                <p class="text-xs text-slate-500">Isolated Schema Scope: <code class="text-amber-600 font-mono font-semibold">girls_hostel</code></p>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <nav class="hidden md:flex items-center space-x-1 bg-slate-100 p-1.5 rounded-xl border border-slate-200 text-xs">
+            <a href="/hostel/" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
+                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Live Monitor
+            </a>
+            <a href="/hostel/students" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
+                <i data-lucide="users" class="w-4 h-4"></i> Student Directory
+            </a>
+            <a href="/hostel/logs" class="px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold shadow-sm flex items-center gap-1.5">
+                <i data-lucide="list" class="w-4 h-4"></i> Movement Logs
+            </a>
+            <a href="/hostel/curfew" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
+                <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
+            </a>
+        </nav>
+
+        <div class="flex items-center space-x-4">
+            <button onclick="loadLogs()" class="text-xs px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition border border-indigo-200 font-semibold flex items-center gap-1">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh Logs
+            </button>
+
+            <!-- Mobile Menu Toggle Button (Mobile Only) -->
+            <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 transition">
+                <i data-lucide="menu" class="w-6 h-6"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Mobile Dropdown Navigation Menu -->
+    <div id="mobileMenu" class="hidden md:hidden bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3 space-y-2 text-sm shadow-md">
+        <a href="/hostel/" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
+            <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Live Monitor
+        </a>
+        <a href="/hostel/students" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
+            <i data-lucide="users" class="w-4 h-4"></i> Student Directory & Registration
+        </a>
+        <a href="/hostel/logs" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 font-semibold">
+            <i data-lucide="list" class="w-4 h-4"></i> Movement Logs
+        </a>
+        <a href="/hostel/curfew" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
+            <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
+        </a>
+    </div>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-6 py-8 space-y-6">
+
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+                <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Student Movement Audit Logs</h2>
+                <p class="text-sm text-slate-500">Complete historical log of entry & exit gate events in <code class="text-amber-600 font-mono font-semibold">girls_hostel.movement_logs</code></p>
+            </div>
+            <div class="flex items-center space-x-3 w-full md:w-auto">
+                <select id="dirFilter" onchange="filterLogs()" class="bg-white border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                    <option value="ALL">All Directions (IN & OUT)</option>
+                    <option value="IN">Only IN (Entry)</option>
+                    <option value="OUT">Only OUT (Exit)</option>
+                </select>
+                <input type="text" id="logSearch" oninput="filterLogs()" placeholder="Search name or roll..." class="bg-white border border-slate-300 rounded-xl px-4 py-2 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 w-48 shadow-sm">
+            </div>
+        </div>
+
+        <!-- Logs Table -->
+        <div class="glass-panel p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-700">
+                    <thead class="bg-slate-100 text-xs text-slate-700 uppercase tracking-wider border-b border-slate-200 font-semibold">
+                        <tr>
+                            <th class="px-4 py-3">Log ID</th>
+                            <th class="px-4 py-3">Student Name</th>
+                            <th class="px-4 py-3">Roll Number</th>
+                            <th class="px-4 py-3">Room</th>
+                            <th class="px-4 py-3">Direction</th>
+                            <th class="px-4 py-3">Gate Camera</th>
+                            <th class="px-4 py-3">Timestamp</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fullLogsTable" class="divide-y divide-slate-200">
+                        <tr>
+                            <td colspan="7" class="px-4 py-8 text-center text-slate-500">Loading movement logs...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <script>
+        lucide.createIcons();
+        let allLogs = [];
+
+        async function loadLogs() {
+            try {
+                const res = await fetch('/hostel/api/movement_logs?limit=200');
+                const data = await res.json();
+                allLogs = data.logs || [];
+                renderLogs(allLogs);
+            } catch (e) {
+                console.error("Error loading logs:", e);
+            }
+        }
+
+        function renderLogs(list) {
+            const tbody = document.getElementById('fullLogsTable');
+            if (list.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-slate-500">No movement logs found.</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = list.map(l => {
+                const sp = l.student_profiles || {};
+                const isOut = l.direction === 'OUT';
+                return `
+                    <tr class="hover:bg-slate-50 transition">
+                        <td class="px-4 py-3 font-mono text-xs text-slate-500">#${l.id}</td>
+                        <td class="px-4 py-3 font-semibold text-slate-900">${sp.name || 'Unknown Student'}</td>
+                        <td class="px-4 py-3 text-slate-600 font-mono">${sp.roll_number || 'N/A'}</td>
+                        <td class="px-4 py-3 text-slate-600">${sp.room_number || 'N/A'}</td>
+                        <td class="px-4 py-3">
+                            <span class="text-xs px-2.5 py-1 rounded-full font-bold ${isOut ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'}">
+                                ${l.direction}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-xs text-slate-600 font-mono">${l.camera_id}</td>
+                        <td class="px-4 py-3 text-xs text-slate-600 font-mono">${new Date(l.timestamp).toLocaleString()}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterLogs() {
+            const dir = document.getElementById('dirFilter').value;
+            const q = document.getElementById('logSearch').value.toLowerCase();
+
+            const filtered = allLogs.filter(l => {
+                const sp = l.student_profiles || {};
+                const matchDir = dir === 'ALL' || l.direction === dir;
+                const matchQ = !q || (sp.name && sp.name.toLowerCase().includes(q)) || (sp.roll_number && sp.roll_number.toLowerCase().includes(q));
+                return matchDir && matchQ;
+            });
+
+            renderLogs(filtered);
+        }
+
+        loadLogs();
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobileMenu');
+            if (menu) {
+                menu.classList.toggle('hidden');
+            }
+        }
+    </script>
+
+    <!-- Mobile Fixed Bottom Navigation Bar -->
+    <nav class="fixed bottom-0 left-0 w-full z-50 flex md:hidden justify-around items-center bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl py-2 px-1 text-xs">
+        <a href="/hostel/" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-indigo-600 font-medium">
+            <i data-lucide="layout-dashboard" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[11px]">Monitor</span>
+        </a>
+        <a href="/hostel/students" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-indigo-600 font-medium">
+            <i data-lucide="users" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[11px]">Directory</span>
+        </a>
+        <a href="/hostel/logs" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-indigo-600 font-bold">
+            <i data-lucide="list" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[11px]">Logs</span>
+        </a>
+        <a href="/hostel/curfew" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-indigo-600 font-medium">
+            <i data-lucide="clock" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[11px]">Curfew</span>
+        </a>
+    </nav>
+</body>
+</html>
+
