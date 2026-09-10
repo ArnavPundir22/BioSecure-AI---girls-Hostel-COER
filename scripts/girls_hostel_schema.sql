@@ -79,13 +79,43 @@ INSERT INTO girls_hostel.system_settings (key, value) VALUES
 ('alert_config', '{"smtp_enabled": true, "cooldown_seconds": 15}')
 ON CONFLICT (key) DO NOTHING;
 
--- 6. Enable Row Level Security (RLS) on all 4 tables
+-- 5b. Create Camera Settings Table (girls_hostel.camera_settings)
+CREATE TABLE IF NOT EXISTS girls_hostel.camera_settings (
+    id SERIAL PRIMARY KEY,
+    camera_role VARCHAR(20) UNIQUE NOT NULL,
+    vendor VARCHAR(50) NOT NULL,
+    ip_address VARCHAR(100),
+    port INT DEFAULT 554,
+    channel INT DEFAULT 1,
+    username VARCHAR(100),
+    password VARCHAR(100),
+    custom_rtsp_url TEXT,
+    resolution VARCHAR(50) DEFAULT '1280x720',
+    fps INT DEFAULT 30,
+    enabled BOOLEAN DEFAULT TRUE,
+    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT chk_girls_hostel_camera_role CHECK (camera_role IN ('IN', 'OUT'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_girls_hostel_camera_settings_role 
+ON girls_hostel.camera_settings (camera_role);
+
+-- Insert Default Camera Settings (IN Gate & OUT Gate)
+INSERT INTO girls_hostel.camera_settings (
+    id, camera_role, vendor, ip_address, port, channel, username, password, custom_rtsp_url, resolution, fps, enabled
+) VALUES
+(1, 'IN',  'USB Webcam', '192.168.1.64', 554, 1, 'admin', '', '0', '1280x720', 30, true),
+(2, 'OUT', 'USB Webcam', '192.168.1.65', 554, 2, 'admin', '', '1', '1280x720', 30, true)
+ON CONFLICT (camera_role) DO NOTHING;
+
+-- 6. Enable Row Level Security (RLS) on all hostel tables
 ALTER TABLE girls_hostel.student_profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE girls_hostel.movement_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE girls_hostel.curfew_alerts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE girls_hostel.system_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE girls_hostel.camera_settings ENABLE ROW LEVEL SECURITY;
 
--- Service Role Full Access Policies
+-- Service Role Access Policies
 DROP POLICY IF EXISTS service_role_all_student_profiles ON girls_hostel.student_profiles;
 CREATE POLICY service_role_all_student_profiles ON girls_hostel.student_profiles
     FOR ALL TO service_role USING (true) WITH CHECK (true);
@@ -100,6 +130,10 @@ CREATE POLICY service_role_all_curfew_alerts ON girls_hostel.curfew_alerts
 
 DROP POLICY IF EXISTS service_role_all_system_settings ON girls_hostel.system_settings;
 CREATE POLICY service_role_all_system_settings ON girls_hostel.system_settings
+    FOR ALL TO service_role USING (true) WITH CHECK (true);
+
+DROP POLICY IF EXISTS service_role_all_camera_settings ON girls_hostel.camera_settings;
+CREATE POLICY service_role_all_camera_settings ON girls_hostel.camera_settings
     FOR ALL TO service_role USING (true) WITH CHECK (true);
 
 -- 7. Isolated Vector Matching RPC Function (girls_hostel.match_face)
@@ -118,7 +152,7 @@ RETURNS TABLE (
 )
 LANGUAGE plpgsql
 SECURITY DEFINER
-SET search_path = girls_hostel, pg_temp
+SET search_path = girls_hostel, pg_temp;
 AS $$
 BEGIN
     RETURN QUERY
@@ -142,3 +176,4 @@ GRANT ALL ON SCHEMA girls_hostel TO service_role;
 GRANT ALL ON ALL TABLES IN SCHEMA girls_hostel TO service_role;
 GRANT ALL ON ALL FUNCTIONS IN SCHEMA girls_hostel TO service_role;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA girls_hostel TO service_role;
+

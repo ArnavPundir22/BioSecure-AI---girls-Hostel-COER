@@ -2,8 +2,10 @@
 # Use this file instead of requirements.txt on Windows:
 #   pip install -r requirements-windows.txt
 #
-# The only difference from requirements.txt is that insightface is installed
-# from a pre-built wheel to avoid the MSVC C++ compiler requirement.
+# Key Windows differences from requirements.txt:
+# 1. insightface is installed from a pre-built wheel (Python 3.10 64-bit) to avoid MSVC C++ compiler errors.
+# 2. numpy is pinned to 1.26.4 & opencv-python-headless to 4.10.0.84 for pre-built wheel compatibility.
+# 3. gunicorn is excluded (requires Unix fcntl/fork). Production WSGI on Windows uses waitress (waitress==3.0.2).
 
 albucore==0.0.24
 albumentations==2.0.8
@@ -27,7 +29,6 @@ exceptiongroup==1.3.1
 Flask==3.1.1
 flatbuffers==25.2.10
 fonttools==4.59.0
-gunicorn==23.0.0
 h11==0.16.0
 h2==4.3.0
 hpack==4.2.0

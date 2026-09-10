@@ -88,14 +88,50 @@ def _default_system_settings_data() -> List[Dict[str, Any]]:
     ]
 
 
+def _default_camera_settings_data() -> List[Dict[str, Any]]:
+    now_str = datetime.now(timezone.utc).isoformat()
+    return [
+        {
+            "id": 1,
+            "camera_role": "IN",
+            "vendor": "USB Webcam",
+            "ip_address": "192.168.1.64",
+            "port": 554,
+            "channel": 1,
+            "username": "admin",
+            "password": "",
+            "custom_rtsp_url": "0",
+            "resolution": "1280x720",
+            "fps": 30,
+            "enabled": True,
+            "updated_at": now_str,
+        },
+        {
+            "id": 2,
+            "camera_role": "OUT",
+            "vendor": "USB Webcam",
+            "ip_address": "192.168.1.65",
+            "port": 554,
+            "channel": 2,
+            "username": "admin",
+            "password": "",
+            "custom_rtsp_url": "1",
+            "resolution": "1280x720",
+            "fps": 30,
+            "enabled": True,
+            "updated_at": now_str,
+        },
+    ]
+
+
 class MockSupabaseHostelClient:
     """
     In-memory Supabase client strictly enforcing schema='girls_hostel'.
-    Raises SchemaIsolationViolationError if public schema is accessed or schema scoping is omitted.
+    Raises SchemaIsolationViolationError if non-isolated schema is accessed or schema scoping is omitted.
     Implements real table operations and genuine cosine vector similarity.
     """
 
-    ALLOWED_TABLES = {"student_profiles", "movement_logs", "curfew_alerts", "system_settings"}
+    ALLOWED_TABLES = {"student_profiles", "movement_logs", "curfew_alerts", "system_settings", "camera_settings"}
 
     def __init__(self, current_schema: Optional[str] = "girls_hostel"):
         self.current_schema = current_schema
@@ -104,7 +140,8 @@ class MockSupabaseHostelClient:
             "student_profiles": [],
             "movement_logs": [],
             "curfew_alerts": [],
-            "system_settings": _default_system_settings_data()
+            "system_settings": _default_system_settings_data(),
+            "camera_settings": _default_camera_settings_data(),
         }
         self.queries_log: List[Dict[str, Any]] = []
 
@@ -158,6 +195,7 @@ class MockSupabaseHostelClient:
         self.tables["movement_logs"] = []
         self.tables["curfew_alerts"] = []
         self.tables["system_settings"] = _default_system_settings_data()
+        self.tables["camera_settings"] = _default_camera_settings_data()
         self.queries_log = []
 
 
@@ -268,7 +306,12 @@ class MockIsolatedTableQuery:
             records = self._payload if isinstance(self._payload, list) else [self._payload]
             upserted = []
             for r in records:
-                pk_col = "key" if "key" in r else "id"
+                if "camera_role" in r:
+                    pk_col = "camera_role"
+                elif "key" in r:
+                    pk_col = "key"
+                else:
+                    pk_col = "id"
                 pk_val = r.get(pk_col)
                 found = False
                 for row in table_store:

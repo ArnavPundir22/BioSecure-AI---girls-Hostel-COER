@@ -83,4 +83,3 @@ Ensure student face registration on `/add_student` continues to use the warden's
 - [ ] Zero crash guarantee: Network dropouts, bad RTSP credentials, or DVR reboots do not throw unhandled exceptions or crash Gunicorn/Flask workers.
 - [ ] IN and OUT gate camera feeds process concurrently and log accurate movement records (`gate: 'IN'` or `gate: 'OUT'`) to Supabase `movement_logs`.
 - [ ] Automated or manual verification confirms camera configuration hot-reloading works without server restarts.
-

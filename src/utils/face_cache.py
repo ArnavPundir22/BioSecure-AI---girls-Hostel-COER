@@ -182,7 +182,8 @@ def add_student_to_cache(
     room_number: Optional[str] = None
 ):
     """Dynamically append a new student to the in-memory matrix without reloading full DB."""
-    global _student_ids, _student_metadata, _embeddings_matrix
+    global _student_ids, _student_metadata, _embeddings_matrix, _is_initialized
+    _is_initialized = True
 
     norm_emb = normalize_embedding(embedding)
     if norm_emb is None:

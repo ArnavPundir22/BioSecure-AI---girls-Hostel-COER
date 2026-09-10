@@ -39,18 +39,43 @@ def dashboard():
 
 @hostel_bp.route("/video_feed")
 def video_feed():
-    """Live MJPEG video stream from host computer camera with face recognition overlay."""
+    """
+    Live MJPEG video stream from gate camera with face recognition overlay.
+    Accepts optional query parameter ?role=IN or ?role=OUT (default: IN).
+    """
+    role = request.args.get("role", "IN").strip().upper()
+    if role not in ("IN", "OUT"):
+        role = "IN"
     camera_manager = get_camera_manager()
     return Response(
-        camera_manager.generate_mjpeg_stream(),
+        camera_manager.generate_mjpeg_stream(role=role),
+        mimetype="multipart/x-mixed-replace; boundary=frame"
+    )
+
+@hostel_bp.route("/video_feed/in")
+def video_feed_in():
+    """Dedicated endpoint for IN Gate live MJPEG feed."""
+    return Response(
+        get_camera_manager().generate_mjpeg_stream(role="IN"),
+        mimetype="multipart/x-mixed-replace; boundary=frame"
+    )
+
+@hostel_bp.route("/video_feed/out")
+def video_feed_out():
+    """Dedicated endpoint for OUT Gate live MJPEG feed."""
+    return Response(
+        get_camera_manager().generate_mjpeg_stream(role="OUT"),
         mimetype="multipart/x-mixed-replace; boundary=frame"
     )
 
 @hostel_bp.route("/video_frame")
 def video_frame():
-    """Return latest single JPEG frame from host computer camera with face recognition overlay."""
+    """Return latest single JPEG frame from gate camera with face recognition overlay."""
+    role = request.args.get("role", "IN").strip().upper()
+    if role not in ("IN", "OUT"):
+        role = "IN"
     camera_manager = get_camera_manager()
-    jpeg_bytes = camera_manager.get_latest_jpeg()
+    jpeg_bytes = camera_manager.get_latest_jpeg(role=role)
     if not jpeg_bytes:
         from src.services.hostel_camera import _placeholder_bytes
         jpeg_bytes = _placeholder_bytes

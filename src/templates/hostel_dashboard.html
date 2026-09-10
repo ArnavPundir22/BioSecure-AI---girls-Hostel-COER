@@ -50,6 +50,9 @@
             <a href="/hostel/curfew" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
                 <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
             </a>
+            <a href="/admin/cameras" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
+                <i data-lucide="video" class="w-4 h-4 text-indigo-600"></i> Camera Setup
+            </a>
         </nav>
 
         <div class="flex items-center space-x-4">
@@ -78,6 +81,9 @@
         </a>
         <a href="/hostel/curfew" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
             <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
+        </a>
+        <a href="/admin/cameras" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
+            <i data-lucide="video" class="w-4 h-4 text-indigo-600"></i> Camera Setup
         </a>
     </div>
 
@@ -177,10 +183,15 @@
                             <i data-lucide="video" class="w-5 h-5 text-emerald-600"></i> CAM 01: HOST SYSTEM CAMERA (ENTRY)
                         </h2>
                     </div>
-                    <span class="text-xs font-mono bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-200 font-bold">LOGS: IN</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-mono bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-200 font-bold">LOGS: IN</span>
+                        <a href="/admin/cameras" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1">
+                            <i data-lucide="settings" class="w-3.5 h-3.5"></i> Setup
+                        </a>
+                    </div>
                 </div>
                 <div class="relative aspect-video bg-slate-900 rounded-xl overflow-hidden border border-slate-800 shadow-inner flex items-center justify-center">
-                    <img id="cam1Feed" src="/hostel/video_feed" class="w-full h-full object-cover" alt="Live Host Camera Feed (Entry Gate)" onerror="this.onerror=null; this.classList.add('hidden'); document.getElementById('cam1Placeholder').classList.remove('hidden');" />
+                    <img id="cam1Feed" src="/hostel/video_feed?role=IN" class="w-full h-full object-cover" alt="Live Host Camera Feed (Entry Gate)" onerror="this.onerror=null; this.classList.add('hidden'); document.getElementById('cam1Placeholder').classList.remove('hidden');" />
                     <!-- Fallback placeholder if stream interrupted -->
                     <div id="cam1Placeholder" class="hidden absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-900">
                         <div class="p-4 rounded-full bg-emerald-500/10 border border-emerald-500/30">
@@ -203,10 +214,15 @@
                             <i data-lucide="video" class="w-5 h-5 text-amber-600"></i> CAM 02: HOST SYSTEM CAMERA (EXIT)
                         </h2>
                     </div>
-                    <span class="text-xs font-mono bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full border border-amber-200 font-bold">LOGS: OUT</span>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-mono bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full border border-amber-200 font-bold">LOGS: OUT</span>
+                        <a href="/admin/cameras" class="text-xs text-amber-600 hover:text-amber-800 font-medium flex items-center gap-1">
+                            <i data-lucide="settings" class="w-3.5 h-3.5"></i> Setup
+                        </a>
+                    </div>
                 </div>
                 <div class="relative aspect-video bg-slate-900 rounded-xl overflow-hidden border border-slate-800 shadow-inner flex items-center justify-center">
-                    <img id="cam2Feed" src="/hostel/video_feed" class="w-full h-full object-cover" alt="Live Host Camera Feed (Exit Gate)" onerror="this.onerror=null; this.classList.add('hidden'); document.getElementById('cam2Placeholder').classList.remove('hidden');" />
+                    <img id="cam2Feed" src="/hostel/video_feed?role=OUT" class="w-full h-full object-cover" alt="Live Host Camera Feed (Exit Gate)" onerror="this.onerror=null; this.classList.add('hidden'); document.getElementById('cam2Placeholder').classList.remove('hidden');" />
                     <!-- Fallback placeholder -->
                     <div id="cam2Placeholder" class="hidden absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-900">
                         <div class="p-4 rounded-full bg-amber-500/10 border border-amber-500/30">
@@ -273,69 +289,79 @@
             try {
                 // 1. Fetch Stats
                 const statsRes = await fetch('/hostel/api/stats');
-                const stats = await statsRes.json();
-                document.getElementById('statTotal').innerText = stats.total_students || 0;
-                document.getElementById('statIn').innerText = stats.total_in || 0;
-                document.getElementById('statOut').innerText = stats.total_out || 0;
-                document.getElementById('statOverdue').innerText = stats.overdue_count || 0;
+                if (statsRes.status === 401 || statsRes.redirected) {
+                    window.location.href = '/login';
+                    return;
+                }
+                if (statsRes.ok) {
+                    const stats = await statsRes.json();
+                    document.getElementById('statTotal').innerText = stats.total_students ?? 0;
+                    document.getElementById('statIn').innerText = stats.total_in ?? 0;
+                    document.getElementById('statOut').innerText = stats.total_out ?? 0;
+                    document.getElementById('statOverdue').innerText = stats.overdue_count ?? 0;
+                }
 
                 // 2. Fetch Overdue Alerts
                 const overdueRes = await fetch('/hostel/api/overdue_alerts');
-                const overdueData = await overdueRes.json();
-                const overdueContainer = document.getElementById('overdueContainer');
-                const overdueSection = document.getElementById('overdueSection');
+                if (overdueRes.ok) {
+                    const overdueData = await overdueRes.json();
+                    const overdueContainer = document.getElementById('overdueContainer');
+                    const overdueSection = document.getElementById('overdueSection');
 
-                if (overdueData.alerts && overdueData.alerts.length > 0) {
-                    overdueSection.classList.remove('hidden');
-                    overdueContainer.innerHTML = overdueData.alerts.map(a => {
-                        const sp = a.student_profiles || {};
-                        return `
-                            <div class="bg-white border border-rose-300 rounded-xl p-4 space-y-2 shadow-sm">
-                                <div class="flex items-center justify-between">
-                                    <h3 class="font-bold text-rose-800">${sp.name || 'Unknown Student'}</h3>
-                                    <span class="text-xs bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full border border-rose-200 font-bold">OVERDUE OUT</span>
+                    if (overdueData.alerts && overdueData.alerts.length > 0) {
+                        overdueSection.classList.remove('hidden');
+                        overdueContainer.innerHTML = overdueData.alerts.map(a => {
+                            const sp = a.student_profiles || {};
+                            return `
+                                <div class="bg-white border border-rose-300 rounded-xl p-4 space-y-2 shadow-sm">
+                                    <div class="flex items-center justify-between">
+                                        <h3 class="font-bold text-rose-800">${sp.name || 'Unknown Student'}</h3>
+                                        <span class="text-xs bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full border border-rose-200 font-bold">OVERDUE OUT</span>
+                                    </div>
+                                    <div class="text-xs text-slate-600 space-y-1">
+                                        <div>Roll: <span class="text-slate-900 font-semibold">${sp.roll_number || 'N/A'}</span> | Room: <span class="text-slate-900 font-semibold">${sp.room_number || 'N/A'}</span></div>
+                                        <div>Parent Phone: <a href="tel:${sp.parent_contact}" class="text-indigo-600 font-mono font-bold underline">${sp.parent_contact || 'N/A'}</a></div>
+                                        <div>Curfew Window: <span class="text-slate-700">17:00 - 19:30</span></div>
+                                    </div>
+                                    <button onclick="resolveAlert(${a.id})" class="w-full mt-2 text-xs py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold transition shadow-sm">
+                                        Mark Resolved / Note Reason
+                                    </button>
                                 </div>
-                                <div class="text-xs text-slate-600 space-y-1">
-                                    <div>Roll: <span class="text-slate-900 font-semibold">${sp.roll_number || 'N/A'}</span> | Room: <span class="text-slate-900 font-semibold">${sp.room_number || 'N/A'}</span></div>
-                                    <div>Parent Phone: <a href="tel:${sp.parent_contact}" class="text-indigo-600 font-mono font-bold underline">${sp.parent_contact || 'N/A'}</a></div>
-                                    <div>Curfew Window: <span class="text-slate-700">17:00 - 19:30</span></div>
-                                </div>
-                                <button onclick="resolveAlert(${a.id})" class="w-full mt-2 text-xs py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold transition shadow-sm">
-                                    Mark Resolved / Note Reason
-                                </button>
-                            </div>
-                        `;
-                    }).join('');
-                } else {
-                    overdueSection.classList.add('hidden');
+                            `;
+                        }).join('');
+                    } else {
+                        overdueSection.classList.add('hidden');
+                    }
                 }
 
                 // 3. Fetch Movement Logs
                 const logsRes = await fetch('/hostel/api/movement_logs');
-                const logsData = await logsRes.json();
-                const tbody = document.getElementById('logsTableBody');
+                if (logsRes.ok) {
+                    const logsData = await logsRes.json();
+                    const tbody = document.getElementById('logsTableBody');
 
-                if (logsData.logs && logsData.logs.length > 0) {
-                    tbody.innerHTML = logsData.logs.map(l => {
-                        const sp = l.student_profiles || {};
-                        const isOut = l.direction === 'OUT';
-                        return `
-                            <tr class="hover:bg-slate-50 transition">
-                                <td class="px-4 py-3 font-semibold text-slate-900">${sp.name || 'N/A'}</td>
-                                <td class="px-4 py-3 text-slate-600 font-mono">${sp.roll_number || 'N/A'}</td>
-                                <td class="px-4 py-3 text-slate-600">${sp.room_number || 'N/A'}</td>
-                                <td class="px-4 py-3">
-                                    <span class="text-xs px-2.5 py-1 rounded-full font-bold ${isOut ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'}">
-                                        ${l.direction}
-                                    </span>
-                                </td>
-                                <td class="px-4 py-3 text-xs text-slate-600 font-mono">${l.camera_id}</td>
-                                <td class="px-4 py-3 text-xs text-slate-600 font-mono">${new Date(l.timestamp).toLocaleString()}</td>
-                            </tr>
-                        `;
-                    }).join('');
-                } else {
-                    tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No movement logs recorded yet.</td></tr>';
+                    if (logsData.logs && logsData.logs.length > 0) {
+                        tbody.innerHTML = logsData.logs.map(l => {
+                            const sp = l.student_profiles || {};
+                            const isOut = l.direction === 'OUT';
+                            return `
+                                <tr class="hover:bg-slate-50 transition">
+                                    <td class="px-4 py-3 font-semibold text-slate-900">${sp.name || 'N/A'}</td>
+                                    <td class="px-4 py-3 text-slate-600 font-mono">${sp.roll_number || 'N/A'}</td>
+                                    <td class="px-4 py-3 text-slate-600">${sp.room_number || 'N/A'}</td>
+                                    <td class="px-4 py-3">
+                                        <span class="text-xs px-2.5 py-1 rounded-full font-bold ${isOut ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'}">
+                                            ${l.direction}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-xs text-slate-600 font-mono">${l.camera_id}</td>
+                                    <td class="px-4 py-3 text-xs text-slate-600 font-mono">${new Date(l.timestamp).toLocaleString()}</td>
+                                </tr>
+                            `;
+                        }).join('');
+                    } else {
+                        tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No movement logs recorded yet.</td></tr>';
+                    }
                 }
 
             } catch (e) {

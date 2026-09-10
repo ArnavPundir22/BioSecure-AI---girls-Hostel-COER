@@ -6,11 +6,14 @@ to guarantee 100% data isolation from classroom attendance systems.
 """
 
 import copy
+import json
 import logging
 import os
+import time
+import urllib.parse
 import uuid
 from datetime import date, datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
 logger = logging.getLogger(__name__)
 
@@ -180,8 +183,15 @@ class MockTableQuery:
             )
             upserted_records = []
             for item in payload_list:
-                pk_val = item.get("key") if "key" in item else item.get("id")
-                pk_col = "key" if "key" in item else "id"
+                if "camera_role" in item:
+                    pk_col = "camera_role"
+                    pk_val = item["camera_role"]
+                elif "key" in item:
+                    pk_col = "key"
+                    pk_val = item["key"]
+                else:
+                    pk_col = "id"
+                    pk_val = item.get("id")
                 matched = False
                 for record in table_store:
                     if record.get(pk_col) == pk_val:
@@ -312,6 +322,42 @@ def _default_system_settings() -> List[Dict[str, Any]]:
     ]
 
 
+def _default_camera_settings() -> List[Dict[str, Any]]:
+    now_str = datetime.now(timezone.utc).isoformat()
+    return [
+        {
+            "id": 1,
+            "camera_role": "IN",
+            "vendor": "USB Webcam",
+            "ip_address": "192.168.1.64",
+            "port": 554,
+            "channel": 1,
+            "username": "admin",
+            "password": "",
+            "custom_rtsp_url": "0",
+            "resolution": "1280x720",
+            "fps": 30,
+            "enabled": True,
+            "updated_at": now_str
+        },
+        {
+            "id": 2,
+            "camera_role": "OUT",
+            "vendor": "USB Webcam",
+            "ip_address": "192.168.1.65",
+            "port": 554,
+            "channel": 2,
+            "username": "admin",
+            "password": "",
+            "custom_rtsp_url": "1",
+            "resolution": "1280x720",
+            "fps": 30,
+            "enabled": True,
+            "updated_at": now_str
+        }
+    ]
+
+
 class MockHostelSupabaseClient:
     """
     Complete in-memory mock client providing genuine database simulation
@@ -323,6 +369,7 @@ class MockHostelSupabaseClient:
         self.movement_logs: List[Dict[str, Any]] = []
         self.curfew_alerts: List[Dict[str, Any]] = []
         self.system_settings: List[Dict[str, Any]] = _default_system_settings()
+        self.camera_settings: List[Dict[str, Any]] = _default_camera_settings()
 
     def schema(self, schema_name: str) -> "MockHostelSupabaseClient":
         return self
@@ -346,6 +393,8 @@ class MockHostelSupabaseClient:
             return self.curfew_alerts
         elif table_name == "system_settings":
             return self.system_settings
+        elif table_name == "camera_settings":
+            return self.camera_settings
         else:
             if not hasattr(self, f"_{table_name}"):
                 setattr(self, f"_{table_name}", [])
@@ -364,6 +413,8 @@ class MockHostelSupabaseClient:
             self.curfew_alerts = records
         elif table_name == "system_settings":
             self.system_settings = records
+        elif table_name == "camera_settings":
+            self.camera_settings = records
 
     def get_student_profile(self, student_id: str) -> Optional[Dict[str, Any]]:
         for s in self.student_profiles:
@@ -372,11 +423,12 @@ class MockHostelSupabaseClient:
         return None
 
     def reset(self) -> None:
-        """Clear dynamic tables and reseed system settings."""
+        """Clear dynamic tables and reseed system and camera settings."""
         self.student_profiles.clear()
         self.movement_logs.clear()
         self.curfew_alerts.clear()
         self.system_settings = _default_system_settings()
+        self.camera_settings = _default_camera_settings()
 
 
 # Default singleton instance of Mock client
@@ -825,6 +877,8 @@ def update_system_settings(
 ) -> bool:
     """Upsert system settings JSON configuration by key."""
     try:
+        # Validate that value is JSON serializable (raises on circular references)
+        json.dumps(value)
         c = get_hostel_client(client)
         payload = {
             "key": key,
@@ -839,3 +893,233 @@ def update_system_settings(
     except Exception as e:
         logger.error(f"Error updating system setting for key '{key}': {e}")
         return False
+
+
+# ============================================================================
+# Camera Settings Persistence & RTSP Stream URL Utilities
+# ============================================================================
+
+CAMERA_RELOAD_SIGNAL_PATH = "/tmp/hostel_camera_reload.signal"
+
+
+def trigger_camera_reload_signal() -> None:
+    """Touch the IPC reload signal file to notify background worker processes to reload configuration."""
+    try:
+        with open(CAMERA_RELOAD_SIGNAL_PATH, "w") as f:
+            f.write(str(time.time()))
+    except Exception as e:
+        logger.warning(f"Could not write camera reload signal file: {e}")
+
+
+def _sync_camera_sources_setting(
+    role: str,
+    payload: Dict[str, Any],
+    client: Optional[Any] = None
+) -> None:
+    """Internal helper to keep girls_hostel.system_settings['camera_sources'] synchronized."""
+    try:
+        current_sources = get_system_settings("camera_sources", client=client) or {}
+        stream_url = build_rtsp_url(payload)
+        key_name = "entry_cam" if role == "IN" else "exit_cam"
+        current_sources[key_name] = stream_url
+        update_system_settings("camera_sources", current_sources, client=client)
+    except Exception as e:
+        logger.warning(f"Could not dual-sync system_settings['camera_sources']: {e}")
+
+
+def build_rtsp_url(settings: Optional[Dict[str, Any]]) -> str:
+    """
+    Construct vendor-specific RTSP stream URL or local device index string.
+    Safely encodes special characters in credentials using RFC 3986 percent-encoding.
+    """
+    if not settings:
+        return "0"
+
+    vendor = str(settings.get("vendor") or "").strip().lower()
+    custom_url = str(settings.get("custom_rtsp_url") or "").strip()
+
+    # USB Webcam or Local Device Index
+    if any(k in vendor for k in ("usb", "webcam", "local", "camera index")):
+        if custom_url and (custom_url.isdigit() or custom_url.startswith("/dev/video")):
+            return custom_url
+        channel = settings.get("channel")
+        if channel is not None and str(channel).isdigit():
+            return str(channel)
+        role = str(settings.get("camera_role") or "IN").upper()
+        return "0" if role == "IN" else "1"
+
+    # Custom RTSP override
+    if "custom" in vendor or (custom_url and custom_url.lower().startswith("rtsp://")):
+        return custom_url
+
+    ip = str(settings.get("ip_address") or "127.0.0.1").strip()
+    port = settings.get("port") or 554
+    channel = settings.get("channel") or (1 if str(settings.get("camera_role", "IN")).upper() == "IN" else 2)
+
+    # Build credentials prefix with RFC 3986 percent-encoding
+    username = str(settings.get("username") or "").strip()
+    password = str(settings.get("password") or "").strip()
+
+    auth_part = ""
+    if username:
+        safe_user = urllib.parse.quote(username, safe="")
+        if password:
+            safe_pass = urllib.parse.quote(password, safe="")
+            auth_part = f"{safe_user}:{safe_pass}@"
+        else:
+            auth_part = f"{safe_user}@"
+
+    # Hikvision preset
+    if "hik" in vendor:
+        ch_str = str(channel)
+        channel_code = ch_str if ch_str.endswith("01") else f"{ch_str}01"
+        return f"rtsp://{auth_part}{ip}:{port}/Streaming/Channels/{channel_code}"
+
+    # CP Plus & Dahua presets
+    if any(k in vendor for k in ("cp plus", "cpplus", "dahua")):
+        return f"rtsp://{auth_part}{ip}:{port}/cam/realmonitor?channel={channel}&subtype=0"
+
+    # TVT preset
+    if "tvt" in vendor:
+        return f"rtsp://{auth_part}{ip}:{port}/ch{channel}/main/av_stream"
+
+    # Generic RTSP fallback
+    if custom_url:
+        return custom_url
+    return f"rtsp://{auth_part}{ip}:{port}/live"
+
+
+def get_default_camera_settings(camera_role: Optional[str] = None) -> Any:
+    """Return default seed configuration dictionaries for IN and OUT gates."""
+    now_str = datetime.now(timezone.utc).isoformat()
+    defaults = {
+        "IN": {
+            "id": 1,
+            "camera_role": "IN",
+            "vendor": "USB Webcam",
+            "ip_address": "192.168.1.64",
+            "port": 554,
+            "channel": 1,
+            "username": "admin",
+            "password": "",
+            "custom_rtsp_url": "0",
+            "resolution": "1280x720",
+            "fps": 30,
+            "enabled": True,
+            "updated_at": now_str,
+        },
+        "OUT": {
+            "id": 2,
+            "camera_role": "OUT",
+            "vendor": "USB Webcam",
+            "ip_address": "192.168.1.65",
+            "port": 554,
+            "channel": 2,
+            "username": "admin",
+            "password": "",
+            "custom_rtsp_url": "1",
+            "resolution": "1280x720",
+            "fps": 30,
+            "enabled": True,
+            "updated_at": now_str,
+        },
+    }
+    if camera_role:
+        role = camera_role.strip().upper()
+        return copy.deepcopy(defaults.get(role, defaults["IN"]))
+    return [copy.deepcopy(defaults["IN"]), copy.deepcopy(defaults["OUT"])]
+
+
+def get_camera_settings(
+    camera_role: Optional[str] = None,
+    client: Optional[Any] = None
+) -> Any:
+    """
+    Fetch camera configuration from girls_hostel.camera_settings.
+    If camera_role is provided ('IN' or 'OUT'), returns a single dictionary.
+    If camera_role is None, returns a list containing configurations for both gates.
+    Falls back to default configurations gracefully on any database error.
+    """
+    try:
+        c = get_hostel_client(client)
+        query = c.table("camera_settings").select("*")
+        if camera_role:
+            role_norm = camera_role.strip().upper()
+            res = query.eq("camera_role", role_norm).execute()
+            if res.data and len(res.data) > 0:
+                return res.data[0]
+            return get_default_camera_settings(role_norm)
+        else:
+            res = query.order("camera_role").execute()
+            if res.data and len(res.data) > 0:
+                found_roles = {item.get("camera_role") for item in res.data}
+                results = list(res.data)
+                for missing_role in ("IN", "OUT"):
+                    if missing_role not in found_roles:
+                        results.append(get_default_camera_settings(missing_role))
+                results.sort(key=lambda x: str(x.get("camera_role", "")))
+                return results
+            return get_default_camera_settings()
+    except Exception as e:
+        logger.error(f"Error fetching camera settings from girls_hostel: {e}")
+        return get_default_camera_settings(camera_role)
+
+
+def save_camera_settings(
+    camera_role: str,
+    settings: Dict[str, Any],
+    client: Optional[Any] = None
+) -> bool:
+    """
+    Persist camera settings for 'IN' or 'OUT' gate to girls_hostel.camera_settings.
+    Automatically touches the IPC reload signal file to notify all worker processes.
+    """
+    if not camera_role or not isinstance(settings, dict):
+        logger.warning("save_camera_settings called with invalid role or payload")
+        return False
+
+    role_norm = camera_role.strip().upper()
+    if role_norm not in ("IN", "OUT"):
+        logger.warning(f"Invalid camera_role: {camera_role}. Must be 'IN' or 'OUT'.")
+        return False
+
+    try:
+        c = get_hostel_client(client)
+        now_str = datetime.now(timezone.utc).isoformat()
+
+        payload = {
+            "camera_role": role_norm,
+            "vendor": str(settings.get("vendor") or "Generic RTSP").strip(),
+            "ip_address": str(settings.get("ip_address") or "").strip() or None,
+            "port": int(settings.get("port") or 554),
+            "channel": int(settings.get("channel") or (1 if role_norm == "IN" else 2)),
+            "username": str(settings.get("username") or "").strip() or None,
+            "password": str(settings.get("password") or "").strip() or None,
+            "custom_rtsp_url": str(settings.get("custom_rtsp_url") or "").strip() or None,
+            "resolution": str(settings.get("resolution") or "1280x720").strip(),
+            "fps": int(settings.get("fps") or 30),
+            "enabled": bool(settings.get("enabled", True)),
+            "updated_at": now_str,
+        }
+
+        if settings.get("id"):
+            payload["id"] = settings["id"]
+        else:
+            payload["id"] = 1 if role_norm == "IN" else 2
+
+        res = c.table("camera_settings").upsert(payload).execute()
+        success = res.data is not None and len(res.data) > 0
+
+        if success:
+            logger.info(f"Successfully saved camera settings for {role_norm}")
+            _sync_camera_sources_setting(role_norm, payload, client=c)
+            trigger_camera_reload_signal()
+            return True
+        return False
+    except Exception as e:
+        logger.error(f"Failed to save camera settings for {role_norm}: {e}")
+        return False
+
+
+# Compatibility alias as specified in requirements
+upsert_camera_settings = save_camera_settings

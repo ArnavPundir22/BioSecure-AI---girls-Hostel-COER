@@ -44,11 +44,13 @@ graph TD
 
 ### Key Performance Innovations:
 1. **Asynchronous Multithreaded Engine**: Camera frame capture (`_camera_loop`) and AI face inference (`_ai_worker_loop`) execute on independent background threads. Video streaming never stutters or drops frames during compute-heavy AI scans.
-2. **Native MJPEG Multipart Streaming**: Web clients connect via a single persistent HTTP connection (`/hostel/video_feed`), rendering live 30 FPS video streams directly in standard `<img>` tags without client-side polling.
-3. **Dual-Tier Verification & Streak Consensus**:
+2. **Configurable Frame Skipping**: `CAMERA_FRAME_SKIP_COUNT` (default `4`) runs AI face detection periodically (~120–150ms), allowing live camera capture to deliver liquid-smooth **30 FPS** video while updating cached bounding boxes seamlessly.
+3. **Native MJPEG Multipart Streaming**: Web clients connect via a single persistent HTTP connection (`/hostel/video_feed`), rendering live 30 FPS video streams directly in standard `<img>` tags without client-side polling. Dashboard UI refresh rate is controlled via `CAMERA_REFRESH_INTERVAL_MS` (default `40` ms).
+4. **Dual-Tier Verification & Streak Consensus**:
    * **High-Confidence Instant Pass**: Cosine similarity $\ge 0.36$.
    * **Consensus Verification Pass**: Cosine similarity $\ge 0.28$ across 2 consecutive frames.
    * **Quality Gate**: Filters out background faces smaller than $35\text{px}$.
+
 
 ---
 

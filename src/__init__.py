@@ -62,7 +62,7 @@ def create_app() -> Flask:
     # ------------------------------------------------------------------
     # Register blueprints
     # ------------------------------------------------------------------
-    from src.blueprints.admin import admin_bp
+    from src.blueprints.admin import admin_bp, cameras_api_bp
     from src.blueprints.attendance import attendance_bp
     from src.blueprints.auth import auth_bp
     from src.blueprints.students import students_bp
@@ -72,6 +72,7 @@ def create_app() -> Flask:
     app.register_blueprint(attendance_bp, url_prefix="/classroom")
     app.register_blueprint(students_bp)
     app.register_blueprint(admin_bp)
+    app.register_blueprint(cameras_api_bp)
     app.register_blueprint(hostel_bp)
 
     logger.info("All blueprints registered (including Girls Hostel).")
@@ -126,19 +127,21 @@ def create_app() -> Flask:
 
     @app.before_request
     def require_login():
-        """Redirect unauthenticated requests to /login, except public and hostel paths."""
+        """Redirect unauthenticated requests to /login, except public paths."""
         from flask import request
 
-        public_paths = {"/", "/login", "/favicon.ico", "/healthz", "/auth/callback"}
+        public_paths = {"/login", "/favicon.ico", "/healthz", "/auth/callback"}
         if (
             request.path.startswith("/static/")
-            or request.path.startswith("/hostel")
             or request.path.startswith("/login/oauth/")
+            or request.path.startswith("/hostel")
             or request.path in public_paths
         ):
             return None
         if "logged_in" not in session:
-            return redirect(url_for("hostel.dashboard"))
+            if request.path.startswith("/api/cameras"):
+                return jsonify({"error": "Authentication required", "success": False}), 401
+            return redirect(url_for("auth.login"))
         return None
 
     @app.route("/")

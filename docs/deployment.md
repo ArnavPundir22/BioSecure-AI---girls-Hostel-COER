@@ -4,29 +4,41 @@ This document provides production setup instructions for **BioSecure AI — Girl
 
 ---
 
-## 🛠️ Environment Variables (.env)
+## 🛠️ Environment Variables Reference (.env)
 
-Create a production `.env` file from `.env.example`:
+Create a production `.env` file from [.env.example](file:///home/dell/BioSecure%20AI%20-%20GIrls%20Hostel/.env.example):
 
 ```ini
 # Flask Secrets
-SECRET_KEY="your-secure-production-random-secret"
+FLASK_SECRET_KEY="your-secure-production-random-secret"
+
+# Supabase Credentials (Optional for local SQLite WAL)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 # InsightFace Execution Device
-# 0 = GPU Execution, -1 = CPU Execution (Default: -1)
+# 0 = CUDA GPU Execution, -1 = CPU Execution (Default: -1)
 INSIGHTFACE_CTX_ID=-1
 
-# Face Matching & Cooldown Parameters
-HIGH_CONFIDENCE_THRESHOLD=0.36
-MIN_MATCH_THRESHOLD=0.28
-COOLDOWN_SECONDS=15.0
+# Face Matching Parameters
+FACE_MATCH_THRESHOLD=0.3
+REATTENDANCE_INTERVAL_MINUTES=10
 
-# Curfew Configuration
-CURFEW_START_TIME="22:00"
-CURFEW_END_TIME="06:00"
+# Camera & High-FPS Performance Tuning
+CAMERA_FRAME_SKIP_COUNT=4       # AI face scan skipped frame interval (default: 4)
+CAMERA_REFRESH_INTERVAL_MS=40    # Live dashboard frame update interval (~25 FPS)
+
+# Biometric Embedding Drift Detection (Pose-Gated EWMA)
+DRIFT_ALPHA=0.3                 # EWMA smoothing factor
+DRIFT_POSE_YAW_MAX=25.0         # Maximum yaw angle for drift processing (deg)
+DRIFT_POSE_PITCH_MAX=20.0       # Maximum pitch angle for drift processing (deg)
+DRIFT_WARN_THRESHOLD=0.15       # Warning alert threshold
+DRIFT_CRITICAL_THRESHOLD=0.25   # Critical alert threshold
+DRIFT_ALERT_THRESHOLD=0.35     # Severe alert threshold
 ```
 
 ---
+
 
 ## 🚀 Production Deployment Stack
 

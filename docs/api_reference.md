@@ -10,6 +10,7 @@ This manual documents the REST endpoints, MJPEG live streaming interfaces, expec
 Serves a high-FPS persistent **MJPEG multipart video stream** (`multipart/x-mixed-replace`) from the host computer's webcam with real-time face recognition bounding boxes and IN/OUT status overlays.
 - **MIME Type**: `multipart/x-mixed-replace; boundary=frame`
 - **Output**: Continuous JPEG frames streamed at **30 FPS**.
+- **Performance Tuning**: Configured via `CAMERA_FRAME_SKIP_COUNT` (default `4`) for AI detection frequency and `CAMERA_REFRESH_INTERVAL_MS` (default `40` ms) for client display updates.
 - **Usage**: Used directly in front-end `<img>` tags (`<img src="/hostel/video_feed" />`).
 
 ### `GET /hostel/video_frame`
@@ -17,6 +18,7 @@ Returns a single latest JPEG snapshot from the host camera.
 - **Query Parameter**: `cam` or `camera_id` (e.g., `CAM_01` or `CAM_02`).
 - **MIME Type**: `image/jpeg`
 - **Output**: Single encoded JPEG frame buffer.
+
 
 ---
 

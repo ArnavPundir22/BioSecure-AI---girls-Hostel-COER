@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CCTV Camera Setup — BioSecure AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <style>
+    .input-dark-glass {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #f8fafc;
+      border-radius: 0.75rem;
+      padding: 0.65rem 0.9rem;
+      font-size: 0.875rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+    .input-dark-glass:focus {
+      border-color: #3b82f6;
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+    }
+    .btn-primary-glass {
+      background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+      color: white;
+      font-weight: 600;
+      border-radius: 0.75rem;
+      padding: 0.65rem 1.25rem;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn-primary-glass:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(59, 130, 246, 0.4);
+    }
+    .btn-secondary-glass {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #e2e8f0;
+      font-weight: 600;
+      border-radius: 0.75rem;
+      padding: 0.65rem 1.25rem;
+      transition: all 0.2s ease;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+    .btn-secondary-glass:hover {
+      background: rgba(255, 255, 255, 0.15);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    .btn-emerald-glass {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: white;
+      font-weight: 600;
+      border-radius: 0.75rem;
+      padding: 0.65rem 1.25rem;
+      transition: all 0.2s ease;
+    }
+    .btn-emerald-glass:hover {
+      opacity: 0.95;
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.4);
+    }
+    .url-preview-banner {
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(51, 65, 85, 0.8);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      font-size: 0.75rem;
+      color: #38bdf8;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body class="bg-[#070d19] text-slate-100 min-h-screen pb-24 md:pb-8 flex flex-col md:flex-row">
+
+  <!-- Desktop Left Sidebar -->
+  <aside class="hidden md:flex flex-col fixed top-0 left-0 h-screen w-64 bg-[#0b1326]/85 backdrop-blur-xl border-r border-white/10 p-6 z-50">
+    <div class="flex items-center gap-3 mb-8">
+      <i data-lucide="scan-face" class="w-8 h-8 text-blue-500"></i>
+      <h1 class="font-geist text-xl font-bold text-blue-400 tracking-tight">BioSecure AI</h1>
+    </div>
+
+    <div class="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 rounded-full border border-emerald-500/20 mb-8 self-start">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span class="font-geist text-xs font-semibold text-emerald-400 uppercase tracking-wider">SYSTEM LIVE</span>
+    </div>
+
+    <nav class="flex-1 flex flex-col gap-2">
+      <a href="/" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-gray-300 hover:bg-white/5">
+        <i data-lucide="home" class="w-5 h-5"></i>
+        <span>Home</span>
+      </a>
+      <a href="/viewer" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-gray-300 hover:bg-white/5">
+        <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
+        <span>View Records</span>
+      </a>
+      <a href="/students" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-gray-300 hover:bg-white/5">
+        <i data-lucide="users" class="w-5 h-5"></i>
+        <span>All Students</span>
+      </a>
+      <a href="/add_student" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-gray-300 hover:bg-white/5">
+        <i data-lucide="user-plus" class="w-5 h-5"></i>
+        <span>Add Student</span>
+      </a>
+      <a href="/admin" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-gray-300 hover:bg-white/5">
+        <i data-lucide="settings" class="w-5 h-5"></i>
+        <span>Admin Portal</span>
+      </a>
+      <a href="/admin/drift" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-gray-300 hover:bg-white/5">
+        <i data-lucide="shield-alert" class="w-5 h-5 text-amber-400"></i>
+        <span>Drift Monitoring</span>
+      </a>
+      <a href="/admin/cameras" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-sm">
+        <i data-lucide="video" class="w-5 h-5 text-indigo-400"></i>
+        <span>CCTV Cameras</span>
+      </a>
+      <a href="/hostel/" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-emerald-400 hover:bg-emerald-500/10">
+        <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+        <span>Hostel Warden Portal</span>
+      </a>
+    </nav>
+
+    <div class="pt-6 border-t border-white/10 flex flex-col gap-4">
+      <div class="flex flex-col">
+        <span class="text-xs text-gray-500">Logged in as</span>
+        <span class="text-sm font-semibold text-gray-200">{{ session_username or 'Admin' }}</span>
+      </div>
+      <a href="/logout" class="btn-secondary-glass w-full py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 text-rose-400 hover:text-rose-300">
+        <i data-lucide="log-out" class="w-4 h-4"></i> Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- Mobile Top Header -->
+  <header class="fixed top-0 left-0 w-full z-50 flex md:hidden justify-between items-center px-6 py-3 bg-[#0b1326]/85 backdrop-blur-xl border-b border-white/10 shadow-lg">
+    <div class="flex items-center gap-3">
+      <i data-lucide="video" class="w-7 h-7 text-indigo-400"></i>
+      <h1 class="font-geist text-lg font-bold text-blue-400 tracking-tight">CCTV Camera Setup</h1>
+    </div>
+    <a href="/hostel/" class="text-xs px-3 py-1.5 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-semibold flex items-center gap-1.5">
+      <i data-lucide="layout-dashboard" class="w-3.5 h-3.5"></i> Warden
+    </a>
+  </header>
+
+  <!-- Main Content Canvas -->
+  <main class="w-full flex-1 p-4 sm:p-6 max-w-7xl mx-auto mt-20 md:mt-4 space-y-6 md:pl-72">
+
+    <!-- Header & Summary Panel -->
+    <div class="glass-panel p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl flex flex-wrap items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3 mb-1">
+          <span class="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+            <i data-lucide="cctv" class="w-6 h-6"></i>
+          </span>
+          <h2 class="text-2xl font-bold tracking-tight text-white">CCTV Camera Setup & Stream Engine</h2>
+        </div>
+        <p class="text-sm text-slate-400">
+          Configure DVR/RTSP streams for concurrent IN and OUT gate biometric recognition.
+          Changes are persisted to <code class="text-indigo-300 font-mono text-xs">girls_hostel.camera_settings</code> and hot-reloaded across worker processes.
+        </p>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <a href="/hostel/" target="_blank" class="btn-secondary-glass text-xs font-semibold">
+          <i data-lucide="external-link" class="w-4 h-4 text-emerald-400"></i> Live Warden Monitor
+        </a>
+        <button onclick="saveAllConfigurations()" class="btn-primary-glass text-xs font-semibold">
+          <i data-lucide="save" class="w-4 h-4"></i> Save All Configurations
+        </button>
+      </div>
+    </div>
+
+    <!-- Dual Gate Configuration Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+
+      <!-- ================= CARD 1: IN GATE (ENTRY GATE) ================= -->
+      <div id="card_IN" class="glass-panel p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl space-y-5 relative shadow-xl">
+        <!-- Card Header -->
+        <div class="flex items-center justify-between border-b border-white/10 pb-4">
+          <div class="flex items-center gap-3">
+            <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+            <div>
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                IN Gate (Entry Gate)
+              </h3>
+              <span class="text-xs text-emerald-400 font-mono font-semibold tracking-wide">
+                CAM_01_ENTRY | TRIGGERS: 'IN' MOVEMENT
+              </span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs text-slate-400 cursor-pointer" for="in_enabled">Enabled</label>
+            <input type="checkbox" id="in_enabled" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 bg-slate-800 border-slate-700" {% if in_camera.get('enabled', True) %}checked{% endif %}>
+          </div>
+        </div>
+
+        <!-- Vendor Preset Selection -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5" for="in_vendor">
+            Vendor Preset / Protocol
+          </label>
+          <select id="in_vendor" onchange="onVendorChange('in')" class="input-dark-glass w-full bg-slate-900/90 text-slate-200">
+            <option value="Hikvision" {% if in_camera.get('vendor') == 'Hikvision' %}selected{% endif %}>Hikvision (NVR/DVR Stream)</option>
+            <option value="CP Plus" {% if in_camera.get('vendor') == 'CP Plus' %}selected{% endif %}>CP Plus (Realmonitor Protocol)</option>
+            <option value="Dahua" {% if in_camera.get('vendor') == 'Dahua' %}selected{% endif %}>Dahua (Realmonitor Protocol)</option>
+            <option value="TVT" {% if in_camera.get('vendor') == 'TVT' %}selected{% endif %}>TVT (av_stream Protocol)</option>
+            <option value="Custom RTSP" {% if in_camera.get('vendor') == 'Custom RTSP' %}selected{% endif %}>Custom RTSP Stream URL</option>
+            <option value="USB Webcam" {% if in_camera.get('vendor') == 'USB Webcam' %}selected{% endif %}>USB Webcam / Local Device Index</option>
+          </select>
+        </div>
+
+        <!-- Network & Authentication Inputs (DVR/RTSP vendors) -->
+        <div id="in_network_group" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="in_ip">IP Address / Hostname</label>
+            <input type="text" id="in_ip" oninput="updateUrlPreview('in')" value="{{ in_camera.get('ip_address') or '192.168.1.64' }}" placeholder="192.168.1.64" class="input-dark-glass w-full font-mono">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="in_port">RTSP Port</label>
+            <input type="number" id="in_port" oninput="updateUrlPreview('in')" value="{{ in_camera.get('port') or 554 }}" placeholder="554" class="input-dark-glass w-full font-mono">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="in_channel">Stream Channel</label>
+            <input type="number" id="in_channel" oninput="updateUrlPreview('in')" value="{{ in_camera.get('channel') or 1 }}" placeholder="1" class="input-dark-glass w-full font-mono">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="in_username">Username</label>
+            <input type="text" id="in_username" oninput="updateUrlPreview('in')" value="{{ in_camera.get('username') or 'admin' }}" placeholder="admin" class="input-dark-glass w-full">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs text-slate-400 mb-1" for="in_password">RTSP Password</label>
+            <div class="relative">
+              <input type="password" id="in_password" oninput="updateUrlPreview('in')" value="{{ in_camera.get('password') or '' }}" placeholder="Camera password" class="input-dark-glass w-full pr-10 font-mono">
+              <button type="button" onclick="togglePasswordVisibility('in')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200">
+                <i id="in_password_icon" data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom RTSP URL Field -->
+        <div id="in_custom_group" class="hidden">
+          <label class="block text-xs text-slate-400 mb-1" for="in_custom_url">Full Custom RTSP URL</label>
+          <input type="text" id="in_custom_url" oninput="updateUrlPreview('in')" value="{{ in_camera.get('custom_rtsp_url') or '' }}" placeholder="rtsp://user:pass@192.168.1.100:554/live/stream1" class="input-dark-glass w-full font-mono">
+        </div>
+
+        <!-- USB Webcam Field -->
+        <div id="in_webcam_group" class="hidden">
+          <label class="block text-xs text-slate-400 mb-1" for="in_device_index">Device Index / Path</label>
+          <input type="text" id="in_device_index" oninput="updateUrlPreview('in')" value="{{ in_camera.get('custom_rtsp_url') or '0' }}" placeholder="0" class="input-dark-glass w-full font-mono">
+          <p class="text-[11px] text-slate-400 mt-1">Index 0 maps to /dev/video0 on host.</p>
+        </div>
+
+        <!-- Live Constructed RTSP URL Preview -->
+        <div>
+          <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+            <span>Generated Stream URI</span>
+            <button type="button" onclick="toggleMaskedPreview('in')" class="text-indigo-400 hover:underline text-[11px]">
+              <span id="in_mask_toggle_text">Show Password</span>
+            </button>
+          </div>
+          <div id="in_url_preview" class="url-preview-banner p-3 rounded-xl border">
+            rtsp://admin:••••••••@192.168.1.64:554/Streaming/Channels/101
+          </div>
+        </div>
+
+        <!-- Performance / Stream Tuning -->
+        <div class="grid grid-cols-2 gap-4 pt-2">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="in_resolution">Target Resolution</label>
+            <select id="in_resolution" class="input-dark-glass w-full bg-slate-900/90 text-slate-200 text-xs">
+              <option value="1920x1080" {% if in_camera.get('resolution') == '1920x1080' %}selected{% endif %}>1920x1080 (1080p Full HD)</option>
+              <option value="1280x720" {% if in_camera.get('resolution') == '1280x720' or not in_camera.get('resolution') %}selected{% endif %}>1280x720 (720p HD Recommended)</option>
+              <option value="640x480" {% if in_camera.get('resolution') == '640x480' %}selected{% endif %}>640x480 (VGA Low Bandwidth)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="in_fps">Target FPS</label>
+            <select id="in_fps" class="input-dark-glass w-full bg-slate-900/90 text-slate-200 text-xs">
+              <option value="30" {% if in_camera.get('fps') == 30 or not in_camera.get('fps') %}selected{% endif %}>30 FPS (Smooth Motion)</option>
+              <option value="25" {% if in_camera.get('fps') == 25 %}selected{% endif %}>25 FPS (Standard PAL)</option>
+              <option value="15" {% if in_camera.get('fps') == 15 %}selected{% endif %}>15 FPS (Low CPU Overhead)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-between pt-3 border-t border-white/10">
+          <button type="button" id="btn_test_in" onclick="testConnection('in')" class="btn-secondary-glass text-xs font-semibold">
+            <i data-lucide="activity" class="w-4 h-4 text-emerald-400"></i> Test Connection
+          </button>
+          <button type="button" onclick="saveSingleGate('in')" class="btn-emerald-glass text-xs font-semibold flex items-center gap-1.5">
+            <i data-lucide="check" class="w-4 h-4"></i> Save IN Gate
+          </button>
+        </div>
+      </div>
+
+
+      <!-- ================= CARD 2: OUT GATE (EXIT GATE) ================= -->
+      <div id="card_OUT" class="glass-panel p-6 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl space-y-5 relative shadow-xl">
+        <!-- Card Header -->
+        <div class="flex items-center justify-between border-b border-white/10 pb-4">
+          <div class="flex items-center gap-3">
+            <span class="w-3 h-3 rounded-full bg-amber-400 animate-pulse"></span>
+            <div>
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                OUT Gate (Exit Gate)
+              </h3>
+              <span class="text-xs text-amber-400 font-mono font-semibold tracking-wide">
+                CAM_02_EXIT | TRIGGERS: 'OUT' MOVEMENT
+              </span>
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <label class="text-xs text-slate-400 cursor-pointer" for="out_enabled">Enabled</label>
+            <input type="checkbox" id="out_enabled" class="w-4 h-4 rounded text-indigo-600 focus:ring-indigo-500 bg-slate-800 border-slate-700" {% if out_camera.get('enabled', True) %}checked{% endif %}>
+          </div>
+        </div>
+
+        <!-- Vendor Preset Selection -->
+        <div>
+          <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5" for="out_vendor">
+            Vendor Preset / Protocol
+          </label>
+          <select id="out_vendor" onchange="onVendorChange('out')" class="input-dark-glass w-full bg-slate-900/90 text-slate-200">
+            <option value="Hikvision" {% if out_camera.get('vendor') == 'Hikvision' %}selected{% endif %}>Hikvision (NVR/DVR Stream)</option>
+            <option value="CP Plus" {% if out_camera.get('vendor') == 'CP Plus' %}selected{% endif %}>CP Plus (Realmonitor Protocol)</option>
+            <option value="Dahua" {% if out_camera.get('vendor') == 'Dahua' %}selected{% endif %}>Dahua (Realmonitor Protocol)</option>
+            <option value="TVT" {% if out_camera.get('vendor') == 'TVT' %}selected{% endif %}>TVT (av_stream Protocol)</option>
+            <option value="Custom RTSP" {% if out_camera.get('vendor') == 'Custom RTSP' %}selected{% endif %}>Custom RTSP Stream URL</option>
+            <option value="USB Webcam" {% if out_camera.get('vendor') == 'USB Webcam' %}selected{% endif %}>USB Webcam / Local Device Index</option>
+          </select>
+        </div>
+
+        <!-- Network & Authentication Inputs (DVR/RTSP vendors) -->
+        <div id="out_network_group" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="out_ip">IP Address / Hostname</label>
+            <input type="text" id="out_ip" oninput="updateUrlPreview('out')" value="{{ out_camera.get('ip_address') or '192.168.1.65' }}" placeholder="192.168.1.65" class="input-dark-glass w-full font-mono">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="out_port">RTSP Port</label>
+            <input type="number" id="out_port" oninput="updateUrlPreview('out')" value="{{ out_camera.get('port') or 554 }}" placeholder="554" class="input-dark-glass w-full font-mono">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="out_channel">Stream Channel</label>
+            <input type="number" id="out_channel" oninput="updateUrlPreview('out')" value="{{ out_camera.get('channel') or 2 }}" placeholder="2" class="input-dark-glass w-full font-mono">
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="out_username">Username</label>
+            <input type="text" id="out_username" oninput="updateUrlPreview('out')" value="{{ out_camera.get('username') or 'admin' }}" placeholder="admin" class="input-dark-glass w-full">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs text-slate-400 mb-1" for="out_password">RTSP Password</label>
+            <div class="relative">
+              <input type="password" id="out_password" oninput="updateUrlPreview('out')" value="{{ out_camera.get('password') or '' }}" placeholder="Camera password" class="input-dark-glass w-full pr-10 font-mono">
+              <button type="button" onclick="togglePasswordVisibility('out')" class="absolute right-3 top-2.5 text-slate-400 hover:text-slate-200">
+                <i id="out_password_icon" data-lucide="eye" class="w-4 h-4"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom RTSP URL Field -->
+        <div id="out_custom_group" class="hidden">
+          <label class="block text-xs text-slate-400 mb-1" for="out_custom_url">Full Custom RTSP URL</label>
+          <input type="text" id="out_custom_url" oninput="updateUrlPreview('out')" value="{{ out_camera.get('custom_rtsp_url') or '' }}" placeholder="rtsp://user:pass@192.168.1.101:554/live/stream2" class="input-dark-glass w-full font-mono">
+        </div>
+
+        <!-- USB Webcam Field -->
+        <div id="out_webcam_group" class="hidden">
+          <label class="block text-xs text-slate-400 mb-1" for="out_device_index">Device Index / Path</label>
+          <input type="text" id="out_device_index" oninput="updateUrlPreview('out')" value="{{ out_camera.get('custom_rtsp_url') or '1' }}" placeholder="1" class="input-dark-glass w-full font-mono">
+          <p class="text-[11px] text-slate-400 mt-1">Index 1 maps to /dev/video1 on host.</p>
+        </div>
+
+        <!-- Live Constructed RTSP URL Preview -->
+        <div>
+          <div class="flex items-center justify-between text-xs text-slate-400 mb-1">
+            <span>Generated Stream URI</span>
+            <button type="button" onclick="toggleMaskedPreview('out')" class="text-amber-400 hover:underline text-[11px]">
+              <span id="out_mask_toggle_text">Show Password</span>
+            </button>
+          </div>
+          <div id="out_url_preview" class="url-preview-banner p-3 rounded-xl border border-amber-900/40 text-amber-300">
+            rtsp://admin:••••••••@192.168.1.65:554/Streaming/Channels/201
+          </div>
+        </div>
+
+        <!-- Performance / Stream Tuning -->
+        <div class="grid grid-cols-2 gap-4 pt-2">
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="out_resolution">Target Resolution</label>
+            <select id="out_resolution" class="input-dark-glass w-full bg-slate-900/90 text-slate-200 text-xs">
+              <option value="1920x1080" {% if out_camera.get('resolution') == '1920x1080' %}selected{% endif %}>1920x1080 (1080p Full HD)</option>
+              <option value="1280x720" {% if out_camera.get('resolution') == '1280x720' or not out_camera.get('resolution') %}selected{% endif %}>1280x720 (720p HD Recommended)</option>
+              <option value="640x480" {% if out_camera.get('resolution') == '640x480' %}selected{% endif %}>640x480 (VGA Low Bandwidth)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-400 mb-1" for="out_fps">Target FPS</label>
+            <select id="out_fps" class="input-dark-glass w-full bg-slate-900/90 text-slate-200 text-xs">
+              <option value="30" {% if out_camera.get('fps') == 30 or not out_camera.get('fps') %}selected{% endif %}>30 FPS (Smooth Motion)</option>
+              <option value="25" {% if out_camera.get('fps') == 25 %}selected{% endif %}>25 FPS (Standard PAL)</option>
+              <option value="15" {% if out_camera.get('fps') == 15 %}selected{% endif %}>15 FPS (Low CPU Overhead)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex items-center justify-between pt-3 border-t border-white/10">
+          <button type="button" id="btn_test_out" onclick="testConnection('out')" class="btn-secondary-glass text-xs font-semibold">
+            <i data-lucide="activity" class="w-4 h-4 text-amber-400"></i> Test Connection
+          </button>
+          <button type="button" onclick="saveSingleGate('out')" class="btn-primary-glass text-xs font-semibold flex items-center gap-1.5" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+            <i data-lucide="check" class="w-4 h-4"></i> Save OUT Gate
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Instructions / Preset Reference Footnote -->
+    <div class="glass-panel p-5 rounded-2xl bg-white/5 border border-white/10 text-xs text-slate-400 space-y-2">
+      <div class="font-bold text-slate-200 flex items-center gap-2">
+        <i data-lucide="info" class="w-4 h-4 text-blue-400"></i> Vendor RTSP URI Reference Guide
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
+        <div class="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
+          <span class="text-indigo-400 font-semibold">Hikvision</span>
+          <p class="font-mono text-[10px] text-slate-400 mt-1">/Streaming/Channels/[ch]01</p>
+        </div>
+        <div class="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
+          <span class="text-indigo-400 font-semibold">CP Plus & Dahua</span>
+          <p class="font-mono text-[10px] text-slate-400 mt-1">/cam/realmonitor?channel=[ch]&subtype=0</p>
+        </div>
+        <div class="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
+          <span class="text-indigo-400 font-semibold">TVT NVR</span>
+          <p class="font-mono text-[10px] text-slate-400 mt-1">/ch[ch]/main/av_stream</p>
+        </div>
+        <div class="p-2.5 rounded-lg bg-slate-900/60 border border-slate-800">
+          <span class="text-indigo-400 font-semibold">USB Webcam</span>
+          <p class="font-mono text-[10px] text-slate-400 mt-1">Device Index (0, 1) or /dev/video*</p>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+
+  <!-- ================= LIVE STREAM PROBER MODAL ================= -->
+  <div id="probeModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+    <div class="glass-panel w-full max-w-2xl rounded-2xl bg-slate-900/95 border border-white/20 p-6 space-y-5 shadow-2xl animate-fade-in">
+      
+      <div class="flex items-center justify-between border-b border-white/10 pb-3">
+        <div class="flex items-center gap-2.5">
+          <span id="modalStatusDot" class="w-3 h-3 rounded-full bg-emerald-400"></span>
+          <h3 id="modalTitle" class="font-bold text-lg text-white">Camera Connection Diagnostics</h3>
+        </div>
+        <button onclick="closeProbeModal()" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-white/10">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Preview Canvas / Thumbnail Frame -->
+      <div class="relative aspect-video bg-black rounded-xl overflow-hidden border border-slate-800 flex items-center justify-center">
+        <img id="modalPreviewImg" src="" alt="Camera Stream Live Snapshot" class="w-full h-full object-cover hidden" />
+        <div id="modalLoadingSpinner" class="flex flex-col items-center gap-3">
+          <i data-lucide="loader-2" class="w-10 h-10 text-blue-400 animate-spin"></i>
+          <p class="text-sm font-medium text-slate-300">Testing RTSP handshake & capturing test frame...</p>
+        </div>
+      </div>
+
+      <!-- Telemetry Metric Pills Grid -->
+      <div id="modalMetrics" class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+        <div class="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700">
+          <div class="text-[10px] font-semibold text-slate-400 uppercase">Status</div>
+          <div id="metricStatus" class="text-xs font-bold text-emerald-400 mt-0.5">--</div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700">
+          <div class="text-[10px] font-semibold text-slate-400 uppercase">Resolution</div>
+          <div id="metricResolution" class="text-xs font-mono font-bold text-indigo-300 mt-0.5">--</div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700">
+          <div class="text-[10px] font-semibold text-slate-400 uppercase">Measured FPS</div>
+          <div id="metricFps" class="text-xs font-mono font-bold text-blue-300 mt-0.5">--</div>
+        </div>
+        <div class="p-2.5 rounded-xl bg-slate-800/80 border border-slate-700">
+          <div class="text-[10px] font-semibold text-slate-400 uppercase">Probe Latency</div>
+          <div id="metricLatency" class="text-xs font-mono font-bold text-purple-300 mt-0.5">--</div>
+        </div>
+      </div>
+
+      <!-- Failure Warning Banner -->
+      <div id="modalErrorCard" class="hidden p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs space-y-1">
+        <div class="font-bold flex items-center gap-1.5 text-rose-400">
+          <i data-lucide="alert-triangle" class="w-4 h-4"></i> Stream Probe Failed
+        </div>
+        <p id="modalErrorMsg">Could not connect to camera stream.</p>
+        <p class="text-[11px] text-slate-400 mt-1">Verify camera IP is pingable, RTSP port 554 is open, and credentials are correct.</p>
+      </div>
+
+      <!-- Tested URI Display -->
+      <div class="text-[11px] font-mono text-slate-400 break-all bg-slate-950 p-2.5 rounded-lg border border-slate-800">
+        <span class="text-slate-500">Tested Target: </span><span id="modalTestedUrl">--</span>
+      </div>
+
+      <div class="flex justify-end pt-2">
+        <button onclick="closeProbeModal()" class="btn-secondary-glass text-xs font-semibold">
+          Close Diagnostics
+        </button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Toast Feedback Element -->
+  <div id="toast" class="fixed bottom-6 right-6 z-50 hidden max-w-sm p-4 rounded-xl shadow-2xl backdrop-blur-xl border text-xs font-semibold flex items-center gap-2.5 transition-all">
+    <i id="toastIcon" data-lucide="check-circle" class="w-5 h-5"></i>
+    <span id="toastMsg">Operation completed.</span>
+  </div>
+
+
+  <!-- Client-Side Vendor URL & Probing Logic -->
+  <script>
+    lucide.createIcons();
+
+    let maskPasswords = { in: true, out: true };
+
+    const VENDOR_TEMPLATES = {
+      'Hikvision': (c) => {
+        let ch = String(c.channel || (c.role === 'in' ? '1' : '2'));
+        let code = ch.endsWith('01') ? ch : `${ch}01`;
+        return `rtsp://${c.auth}${c.ip}:${c.port}/Streaming/Channels/${code}`;
+      },
+      'CP Plus': (c) => {
+        let ch = c.channel || (c.role === 'in' ? '1' : '2');
+        return `rtsp://${c.auth}${c.ip}:${c.port}/cam/realmonitor?channel=${ch}&subtype=0`;
+      },
+      'Dahua': (c) => {
+        let ch = c.channel || (c.role === 'in' ? '1' : '2');
+        return `rtsp://${c.auth}${c.ip}:${c.port}/cam/realmonitor?channel=${ch}&subtype=0`;
+      },
+      'TVT': (c) => {
+        let ch = c.channel || (c.role === 'in' ? '1' : '2');
+        return `rtsp://${c.auth}${c.ip}:${c.port}/ch${ch}/main/av_stream`;
+      },
+      'Custom RTSP': (c) => c.custom_url || 'rtsp://...',
+      'USB Webcam': (c) => `Local Device Index: ${c.device_index ?? (c.role === 'in' ? '0' : '1')}`
+    };
+
+    function onVendorChange(role) {
+      const vendor = document.getElementById(`${role}_vendor`).value;
+      const netGroup = document.getElementById(`${role}_network_group`);
+      const customGroup = document.getElementById(`${role}_custom_group`);
+      const webcamGroup = document.getElementById(`${role}_webcam_group`);
+
+      if (vendor === 'Custom RTSP') {
+        netGroup.classList.add('hidden');
+        customGroup.classList.remove('hidden');
+        webcamGroup.classList.add('hidden');
+      } else if (vendor === 'USB Webcam') {
+        netGroup.classList.add('hidden');
+        customGroup.classList.add('hidden');
+        webcamGroup.classList.remove('hidden');
+      } else {
+        netGroup.classList.remove('hidden');
+        customGroup.classList.add('hidden');
+        webcamGroup.classList.add('hidden');
+      }
+
+      updateUrlPreview(role);
+    }
+
+    function updateUrlPreview(role) {
+      const vendor = document.getElementById(`${role}_vendor`).value;
+      const ip = document.getElementById(`${role}_ip`).value.trim() || '192.168.1.64';
+      const port = document.getElementById(`${role}_port`).value.trim() || '554';
+      const channel = document.getElementById(`${role}_channel`).value.trim() || (role === 'in' ? '1' : '2');
+      const user = document.getElementById(`${role}_username`).value.trim();
+      const rawPass = document.getElementById(`${role}_password`).value;
+      const customUrl = document.getElementById(`${role}_custom_url`).value.trim();
+      const devIdx = document.getElementById(`${role}_device_index`).value.trim() || (role === 'in' ? '0' : '1');
+
+      let displayPass = rawPass;
+      if (maskPasswords[role]) {
+        displayPass = rawPass ? '••••••••' : '';
+      }
+
+      let auth = '';
+      if (user) {
+        let safeUser = encodeURIComponent(user);
+        auth = displayPass ? `${safeUser}:${displayPass}@` : `${safeUser}@`;
+      }
+
+      const formatter = VENDOR_TEMPLATES[vendor] || VENDOR_TEMPLATES['Hikvision'];
+      const previewText = formatter({
+        role,
+        auth,
+        ip,
+        port,
+        channel,
+        custom_url: customUrl,
+        device_index: devIdx
+      });
+
+      document.getElementById(`${role}_url_preview`).innerText = previewText;
+    }
+
+    function toggleMaskedPreview(role) {
+      maskPasswords[role] = !maskPasswords[role];
+      const toggleText = document.getElementById(`${role}_mask_toggle_text`);
+      toggleText.innerText = maskPasswords[role] ? 'Show Password' : 'Mask Password';
+      updateUrlPreview(role);
+    }
+
+    function togglePasswordVisibility(role) {
+      const input = document.getElementById(`${role}_password`);
+      const icon = document.getElementById(`${role}_password_icon`);
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        input.type = 'password';
+        icon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    function getGatePayload(role) {
+      const vendor = document.getElementById(`${role}_vendor`).value;
+      const enabled = document.getElementById(`${role}_enabled`).checked;
+      const resolution = document.getElementById(`${role}_resolution`).value;
+      const fps = parseInt(document.getElementById(`${role}_fps`).value, 10) || 30;
+
+      const payload = {
+        camera_role: role.toUpperCase(),
+        vendor: vendor,
+        enabled: enabled,
+        resolution: resolution,
+        fps: fps
+      };
+
+      if (vendor === 'Custom RTSP') {
+        payload.custom_rtsp_url = document.getElementById(`${role}_custom_url`).value.trim();
+      } else if (vendor === 'USB Webcam') {
+        payload.custom_rtsp_url = document.getElementById(`${role}_device_index`).value.trim();
+      } else {
+        payload.ip_address = document.getElementById(`${role}_ip`).value.trim();
+        payload.port = parseInt(document.getElementById(`${role}_port`).value.trim(), 10) || 554;
+        payload.channel = parseInt(document.getElementById(`${role}_channel`).value.trim(), 10) || (role === 'in' ? 1 : 2);
+        payload.username = document.getElementById(`${role}_username`).value.trim();
+        payload.password = document.getElementById(`${role}_password`).value;
+      }
+
+      return payload;
+    }
+
+    async function testConnection(role) {
+      const btn = document.getElementById(`btn_test_${role}`);
+      const origHtml = btn.innerHTML;
+      btn.disabled = true;
+      btn.innerHTML = `<i data-lucide="loader-2" class="w-4 h-4 animate-spin text-blue-400"></i> Probing...`;
+      lucide.createIcons();
+
+      const modal = document.getElementById('probeModal');
+      const spinner = document.getElementById('modalLoadingSpinner');
+      const previewImg = document.getElementById('modalPreviewImg');
+      const errorCard = document.getElementById('modalErrorCard');
+      const statusDot = document.getElementById('modalStatusDot');
+
+      // Reset modal state
+      modal.classList.remove('hidden');
+      spinner.classList.remove('hidden');
+      previewImg.classList.add('hidden');
+      errorCard.classList.add('hidden');
+      document.getElementById('modalTitle').innerText = `Probing ${role.toUpperCase()} Gate Stream...`;
+      document.getElementById('metricStatus').innerText = 'PROBING...';
+      document.getElementById('metricResolution').innerText = '--';
+      document.getElementById('metricFps').innerText = '--';
+      document.getElementById('metricLatency').innerText = '--';
+      document.getElementById('modalTestedUrl').innerText = 'Connecting...';
+
+      try {
+        const payload = getGatePayload(role);
+        const resp = await fetch('/api/cameras/test-connection', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await resp.json();
+        spinner.classList.add('hidden');
+
+        document.getElementById('modalTestedUrl').innerText = data.url_tested || '--';
+        document.getElementById('metricLatency').innerText = `${data.latency_ms ?? '--'} ms`;
+
+        if (data.success) {
+          statusDot.className = 'w-3 h-3 rounded-full bg-emerald-400';
+          document.getElementById('modalTitle').innerText = `${role.toUpperCase()} Gate: Stream Connected`;
+          document.getElementById('metricStatus').className = 'text-xs font-bold text-emerald-400 mt-0.5';
+          document.getElementById('metricStatus').innerText = 'CONNECTED';
+          document.getElementById('metricResolution').innerText = data.resolution || '--';
+          document.getElementById('metricFps').innerText = `${data.fps ?? '--'} FPS`;
+
+          if (data.preview_image) {
+            previewImg.src = data.preview_image;
+            previewImg.classList.remove('hidden');
+          }
+        } else {
+          statusDot.className = 'w-3 h-3 rounded-full bg-rose-500';
+          document.getElementById('modalTitle').innerText = `${role.toUpperCase()} Gate: Connection Failed`;
+          document.getElementById('metricStatus').className = 'text-xs font-bold text-rose-400 mt-0.5';
+          document.getElementById('metricStatus').innerText = data.status || 'FAILED';
+          errorCard.classList.remove('hidden');
+          document.getElementById('modalErrorMsg').innerText = data.error || 'Connection failed';
+        }
+      } catch (err) {
+        spinner.classList.add('hidden');
+        statusDot.className = 'w-3 h-3 rounded-full bg-rose-500';
+        errorCard.classList.remove('hidden');
+        document.getElementById('modalErrorMsg').innerText = `Network/Server Error: ${err.message}`;
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = origHtml;
+        lucide.createIcons();
+      }
+    }
+
+    function closeProbeModal() {
+      document.getElementById('probeModal').classList.add('hidden');
+      document.getElementById('modalPreviewImg').src = '';
+    }
+
+    async function saveSingleGate(role) {
+      const payload = getGatePayload(role);
+      await saveCamerasData({ [role.toUpperCase()]: payload });
+    }
+
+    async function saveAllConfigurations() {
+      const inPayload = getGatePayload('in');
+      const outPayload = getGatePayload('out');
+      await saveCamerasData({ IN: inPayload, OUT: outPayload });
+    }
+
+    async function saveCamerasData(payload) {
+      try {
+        const resp = await fetch('/api/cameras/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await resp.json();
+        if (data.success) {
+          showToast('Configuration saved and hot-reloaded successfully!', 'success');
+        } else {
+          showToast(`Error saving configuration: ${data.error || 'Unknown'}`, 'error');
+        }
+      } catch (err) {
+        showToast(`Request failed: ${err.message}`, 'error');
+      }
+    }
+
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      const toastMsg = document.getElementById('toastMsg');
+      const toastIcon = document.getElementById('toastIcon');
+
+      toastMsg.innerText = msg;
+      if (type === 'success') {
+        toast.className = 'fixed bottom-6 right-6 z-50 max-w-sm p-4 rounded-xl shadow-2xl backdrop-blur-xl border text-xs font-semibold flex items-center gap-2.5 bg-emerald-950/90 border-emerald-500/30 text-emerald-300';
+        toastIcon.setAttribute('data-lucide', 'check-circle');
+      } else {
+        toast.className = 'fixed bottom-6 right-6 z-50 max-w-sm p-4 rounded-xl shadow-2xl backdrop-blur-xl border text-xs font-semibold flex items-center gap-2.5 bg-rose-950/90 border-rose-500/30 text-rose-300';
+        toastIcon.setAttribute('data-lucide', 'alert-circle');
+      }
+      lucide.createIcons();
+      toast.classList.remove('hidden');
+      setTimeout(() => { toast.classList.add('hidden'); }, 4000);
+    }
+
+    // Initialize vendor UI groups and preview banners on load
+    document.addEventListener('DOMContentLoaded', () => {
+      onVendorChange('in');
+      onVendorChange('out');
+    });
+  </script>
+</body>
+</html>

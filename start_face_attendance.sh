@@ -32,11 +32,13 @@ echo " Schema Scope : girls_hostel"
 echo " Access URL   : http://localhost:${PORT}/hostel/"
 echo "============================================================"
 
-# Run with Gunicorn WSGI server on port 5000
+# Run with Gunicorn WSGI server on port 5000 (gthread mode for concurrent MJPEG streaming + APIs)
 exec gunicorn wsgi:app \
     --workers 2 \
+    --threads 4 \
+    --worker-class gthread \
     --bind "0.0.0.0:${PORT}" \
-    --timeout 120 \
+    --timeout 300 \
     --access-logfile - \
     --error-logfile -
 

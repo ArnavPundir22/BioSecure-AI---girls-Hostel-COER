@@ -89,6 +89,9 @@ sequenceDiagram
 ## ⚡ Concurrency & Scaling Principles
 
 1. **Decoupled Video & AI Loop**: Video frames flow to the client at hardware speed (30–60 FPS) without pausing for AI inference.
-2. **Persistent Native MJPEG Streaming**: Serves live camera video via a single HTTP multipart connection (`/hostel/video_feed`), eliminating client-side HTTP GET polling overhead.
-3. **Process-Level Lock**: Uses `fcntl.flock` on `/tmp/hostel_camera_device.lock` so that only one primary Gunicorn worker opens the physical USB camera device, avoiding hardware conflicts.
-4. **SQLite WAL (Write-Ahead Logging) Mode**: Configured with `PRAGMA journal_mode=WAL` and `PRAGMA busy_timeout=5000` to allow concurrent database reads and writes across multiple threads and worker processes.
+2. **Configurable Frame Skipping**: `CAMERA_FRAME_SKIP_COUNT` (default `4`) allows tuning AI detection frequency. Face recognition runs asynchronously every $N$ frames (~120–150ms), keeping bounding box updates responsive while preserving smooth 30 FPS video playback.
+3. **Dashboard Frame Refresh Control**: Front-end dashboards update live camera elements using `CAMERA_REFRESH_INTERVAL_MS` (default `40` ms / ~25 FPS) for fluid video playback without browser rendering lag.
+4. **Persistent Native MJPEG Streaming**: Serves live camera video via a single HTTP multipart connection (`/hostel/video_feed`), eliminating client-side HTTP GET polling overhead.
+5. **Process-Level Lock**: Uses `fcntl.flock` on `/tmp/hostel_camera_device.lock` so that only one primary Gunicorn worker opens the physical USB camera device, avoiding hardware conflicts.
+6. **SQLite WAL (Write-Ahead Logging) Mode**: Configured with `PRAGMA journal_mode=WAL` and `PRAGMA busy_timeout=5000` to allow concurrent database reads and writes across multiple threads and worker processes.
+

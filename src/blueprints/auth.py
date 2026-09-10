@@ -39,7 +39,7 @@ def login():
             session['user_id'] = user.id
             session['access_token'] = auth_response.session.access_token
 
-            return redirect(url_for('attendance.index'))
+            return redirect(url_for('hostel.dashboard'))
             
         except Exception as e:
             error_message = str(e)

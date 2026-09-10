@@ -21,6 +21,8 @@ graph LR
 
 1. **RetinaFace (Detection & Landmarks)**:
    - Detects all face bounding boxes, confidence scores, and 5 facial landmarks (eyes, nose tip, mouth corners).
+   - **Fast 380px Detection Scaling**: Input frames are dynamically resized down to a 380px width detection target for sub-25ms CPU inference execution, while bounding box coordinates map back to 800px display frames.
+   - **Quality Gate**: Filters out distant/background faces smaller than $35\text{px}$ in the detection frame to eliminate false positive matches.
 2. **3D Pose Estimation**:
    - Estimates 3D Euler head orientation angles: **Yaw** (left/right turning), **Pitch** (up/down tilting), and **Roll** (side tilting).
 3. **ArcFace (Feature Extraction)**:
@@ -30,7 +32,7 @@ graph LR
 
 ---
 
-## 📐 Vector Similarity & Cosine Mathematics
+## 📐 Vector Similarity & Dual-Tier Consensus Verification
 
 For a raw embedding vector $v = [v_1, v_2, \dots, v_{512}]$, L2 normalisation yields $\hat{v}$:
 \[\hat{v} = \frac{v}{\|v\|_2} = \frac{v}{\sqrt{\sum_{i=1}^{512} v_i^2}}\]
@@ -38,9 +40,12 @@ For a raw embedding vector $v = [v_1, v_2, \dots, v_{512}]$, L2 normalisation yi
 The cosine similarity score $S$ between a live normalized vector $\hat{E}_{live}$ and stored enrollment vector $\hat{E}_{enroll}$ is:
 \[S = \text{CosineSimilarity}(\hat{E}_{live}, \hat{E}_{enroll}) = \hat{E}_{live} \cdot \hat{E}_{enroll} = \sum_{i=1}^{512} (\hat{E}_{live})_i \cdot (\hat{E}_{enroll})_i\]
 
-* **Match Condition**: Student marked PRESENT if $S \ge 0.40$ (`FACE_MATCH_THRESHOLD = 0.40`).
+### Dual-Tier Verification Rules:
+- **High-Confidence Instant Match** ($S \ge 0.36$): Instantly logs student movement without waiting for additional frames.
+- **Streak Consensus Verification** ($0.28 \le S < 0.36$): Base match threshold requiring **2 consecutive frame detections** to confirm identity and prevent single-frame flickering false positives.
 
 ---
+
 
 ## 🛡️ 3D Pose Gate & EWMA Embedding Drift Math
 

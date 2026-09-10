@@ -21,13 +21,14 @@ bind = f"0.0.0.0:{os.environ.get('PORT', '8000')}"
 # 2 workers is safe for 2 GB RAM + CPU-only InsightFace.
 # Increase to (2 * cpu_count + 1) if you have enough RAM (≥ 4 GB).
 workers = int(os.environ.get("WEB_CONCURRENCY", 2))
-worker_class = "sync"  # sync is fine; use gthread if you need threading
+threads = int(os.environ.get("GUNICORN_THREADS", 4))
+worker_class = "gthread"  # gthread handles streaming feeds and concurrent APIs
 
 # ---------------------------------------------------------------
 # Timeouts
 # ---------------------------------------------------------------
-# InsightFace model loading + group-photo inference can be slow.
-timeout = int(os.environ.get("GUNICORN_TIMEOUT", 120))
+# InsightFace model loading + streaming MJPEG feeds require longer timeout.
+timeout = int(os.environ.get("GUNICORN_TIMEOUT", 300))
 graceful_timeout = 30
 keepalive = 5
 
