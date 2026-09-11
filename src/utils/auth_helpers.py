@@ -64,3 +64,35 @@ def remaining_attempts(email: str) -> int:
     """Return how many more failures are allowed before lockout."""
     count = _get_attempts(email)["count"]
     return max(config.LOGIN_MAX_ATTEMPTS - count, 0)
+
+
+# ---------------------------------------------------------------------------
+# JWT Helpers
+# ---------------------------------------------------------------------------
+
+import jwt
+from datetime import timezone
+
+def generate_jwt_token(user_id: str, email: str, username: str, is_admin: bool = False, expires_hours: int | None = None) -> str:
+    """Generate a signed JWT token containing user info."""
+    hours = expires_hours if expires_hours is not None else config.JWT_EXPIRATION_HOURS
+    now = datetime.now(timezone.utc)
+    payload = {
+        "user_id": str(user_id),
+        "email": email,
+        "username": username,
+        "is_admin": bool(is_admin),
+        "iat": now,
+        "exp": now + timedelta(hours=hours)
+    }
+    return jwt.encode(payload, config.JWT_SECRET_KEY, algorithm=config.JWT_ALGORITHM)
+
+
+def decode_jwt_token(token: str) -> dict | None:
+    """Decode and validate a JWT token. Returns payload dict or None if invalid/expired."""
+    try:
+        payload = jwt.decode(token, config.JWT_SECRET_KEY, algorithms=[config.JWT_ALGORITHM])
+        return payload
+    except Exception:
+        return None
+

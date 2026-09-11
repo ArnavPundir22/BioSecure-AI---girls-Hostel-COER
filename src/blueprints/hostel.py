@@ -280,3 +280,52 @@ def resolve_alert():
     except Exception as e:
         logger.error(f"Error resolving alert: {e}")
         return jsonify({"error": str(e)}), 500
+
+@hostel_bp.route("/api/camera_mode", methods=["GET", "POST"])
+def camera_mode_api():
+    """Get or update current camera feed mode for local single webcam testing."""
+    camera_mgr = get_camera_manager()
+    if request.method == "POST":
+        try:
+            data = request.get_json(silent=True) or request.form or {}
+            target_mode = data.get("mode")
+            if not target_mode and data.get("toggle"):
+                current = camera_mgr.get_camera_mode()
+                cycle = {"AUTO": "IN", "IN": "OUT", "OUT": "DUAL", "DUAL": "AUTO"}
+                target_mode = cycle.get(current, "AUTO")
+            
+            if not target_mode:
+                return jsonify({"error": "Field 'mode' is required (e.g. 'AUTO', 'IN', 'OUT', 'DUAL')"}), 400
+            
+            new_mode = camera_mgr.set_camera_mode(target_mode)
+            descriptions = {
+                "AUTO": "Shared Webcam — Auto-Toggle (Smart In/Out based on student status)",
+                "IN": "Shared Webcam — Force Entry Gate (IN)",
+                "OUT": "Shared Webcam — Force Exit Gate (OUT)",
+                "DUAL": "Dual Cameras — Independent Entry & Exit Gate Feeds"
+            }
+            return jsonify({
+                "status": "success",
+                "mode": new_mode,
+                "description": descriptions.get(new_mode, new_mode),
+                "message": f"Camera mode set to '{new_mode}' successfully"
+            }), 200
+        except ValueError as ve:
+            return jsonify({"error": str(ve)}), 400
+        except Exception as e:
+            logger.error(f"Error updating camera mode: {e}")
+            return jsonify({"error": str(e)}), 500
+    
+    mode = camera_mgr.get_camera_mode()
+    descriptions = {
+        "AUTO": "Shared Webcam — Auto-Toggle (Smart In/Out based on student status)",
+        "IN": "Shared Webcam — Force Entry Gate (IN)",
+        "OUT": "Shared Webcam — Force Exit Gate (OUT)",
+        "DUAL": "Dual Cameras — Independent Entry & Exit Gate Feeds"
+    }
+    return jsonify({
+        "status": "success",
+        "mode": mode,
+        "description": descriptions.get(mode, mode),
+        "available_modes": ["AUTO", "IN", "OUT", "DUAL"]
+    }), 200

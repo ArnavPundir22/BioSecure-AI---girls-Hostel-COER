@@ -1,11 +1,9 @@
 """
-BioSecure AI — Application Factory.
+BioSecure AI — Girls Hostel Application Factory.
 
 Blueprint layout:
   blueprints/auth.py        /login  /logout  /register
-  blueprints/attendance.py  /       /viewer  /upload_photo  /get_attendance_data
-  blueprints/students.py    /students  /add_student  /submit_student
-  blueprints/admin.py       /admin/…
+  blueprints/hostel.py      /hostel (dashboard, students, logs, curfew, video_feed, api)
 """
 
 from __future__ import annotations
@@ -13,9 +11,10 @@ from __future__ import annotations
 import logging
 import os
 
-from flask import Flask, jsonify, redirect, render_template, session, url_for
+from flask import Flask, jsonify, redirect, render_template, session, url_for, g
 
 from src import config
+from src.utils.auth_helpers import decode_jwt_token
 
 
 # ---------------------------------------------------------------------------
@@ -41,41 +40,26 @@ logger = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 
 def create_app() -> Flask:
-    """Create and configure the Flask application."""
-    # Note: templates and static folders are inside src/ templates/ and static/
-    # Because __init__.py is inside src/, Flask automatically resolves paths relative to src/
+    """Create and configure the Flask application for Girls Hostel Management."""
     app = Flask(__name__)
 
     # Trust reverse proxy headers (ngrok) to ensure callback redirects use the public URL scheme
     from werkzeug.middleware.proxy_fix import ProxyFix
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1, x_prefix=1)
 
-    secret_key = os.environ.get("FLASK_SECRET_KEY")
-    if not secret_key:
-        raise RuntimeError(
-            "FLASK_SECRET_KEY is not set. "
-            "Generate one with: python -c \"import secrets; print(secrets.token_hex(32))\" "
-            "and add it to your .env file."
-        )
+    secret_key = os.environ.get("FLASK_SECRET_KEY", "biosecure-girls-hostel-flask-secret")
     app.secret_key = secret_key
 
     # ------------------------------------------------------------------
-    # Register blueprints
+    # Register blueprints (Girls Hostel & Auth only)
     # ------------------------------------------------------------------
-    from src.blueprints.admin import admin_bp, cameras_api_bp
-    from src.blueprints.attendance import attendance_bp
     from src.blueprints.auth import auth_bp
-    from src.blueprints.students import students_bp
     from src.blueprints.hostel import hostel_bp
 
     app.register_blueprint(auth_bp)
-    app.register_blueprint(attendance_bp, url_prefix="/classroom")
-    app.register_blueprint(students_bp)
-    app.register_blueprint(admin_bp)
-    app.register_blueprint(cameras_api_bp)
     app.register_blueprint(hostel_bp)
 
-    logger.info("All blueprints registered (including Girls Hostel).")
+    logger.info("Girls Hostel & Auth blueprints registered successfully.")
 
     # Pre-load in-memory face embedding cache for instant BLAS matching (< 1ms)
     try:
@@ -114,35 +98,55 @@ def create_app() -> Flask:
 
     @app.context_processor
     def inject_user_info():
+        user_data = getattr(g, "user", None) or {}
         return {
-            "session_username": session.get("username"),
-            "session_is_admin": (
-                session.get("is_admin", False) if "username" in session else False
-            ),
+            "session_username": user_data.get("username") or session.get("username"),
+            "session_is_admin": user_data.get("is_admin", False) or session.get("is_admin", False),
         }
 
     # ------------------------------------------------------------------
-    # Request hooks
+    # Request hooks & JWT Protection Middleware
     # ------------------------------------------------------------------
 
     @app.before_request
-    def require_login():
-        """Redirect unauthenticated requests to /login, except public paths."""
+    def require_jwt_auth():
+        """Validate JWT token for all protected routes."""
         from flask import request
 
         public_paths = {"/login", "/favicon.ico", "/healthz", "/auth/callback"}
         if (
             request.path.startswith("/static/")
             or request.path.startswith("/login/oauth/")
-            or request.path.startswith("/hostel")
             or request.path in public_paths
         ):
             return None
-        if "logged_in" not in session:
-            if request.path.startswith("/api/cameras"):
-                return jsonify({"error": "Authentication required", "success": False}), 401
-            return redirect(url_for("auth.login"))
-        return None
+
+        # Extract JWT token from Authorization header, cookie, or session
+        token = None
+        auth_header = request.headers.get("Authorization")
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header.split(" ", 1)[1].strip()
+        
+        if not token:
+            token = request.cookies.get("jwt_access_token")
+
+        if not token:
+            token = session.get("jwt_token")
+
+        if token:
+            payload = decode_jwt_token(token)
+            if payload:
+                g.user = payload
+                session['logged_in'] = True
+                session['username'] = payload.get('username')
+                session['is_admin'] = payload.get('is_admin', False)
+                return None
+
+        # Unauthenticated request
+        if _is_api_request() or request.path.startswith("/hostel/api/"):
+            return jsonify({"error": "Authentication required", "message": "Valid JWT token required"}), 401
+
+        return redirect(url_for("auth.login"))
 
     @app.route("/")
     def index_redirect():
@@ -155,9 +159,9 @@ def create_app() -> Flask:
 
     @app.route("/healthz")
     def healthz():
-        return jsonify({"status": "ok", "service": "biosecure-ai-face-attendance"}), 200
+        return jsonify({"status": "ok", "service": "biosecure-ai-girls-hostel"}), 200
 
-    logger.info("BioSecure AI initialised successfully.")
+    logger.info("BioSecure AI Girls Hostel system initialised successfully.")
     return app
 
 
@@ -171,6 +175,7 @@ def _is_api_request() -> bool:
 
     return (
         request.path.startswith("/api/")
+        or request.path.startswith("/hostel/api/")
         or request.headers.get("X-Requested-With") == "XMLHttpRequest"
         or "application/json" in request.headers.get("Accept", "")
     )

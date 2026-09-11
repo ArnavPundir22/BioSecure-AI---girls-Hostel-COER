@@ -20,7 +20,12 @@ COOLDOWN_SECONDS: int = 15
 _cooldown_registry: Dict[Any, Any] = {}
 _cooldown_lock = threading.Lock()
 
-def process_student_detection(student_id: str, camera_id: str, student_info: dict) -> Optional[str]:
+def process_student_detection(
+    student_id: str,
+    camera_id: str,
+    student_info: dict,
+    camera_mode: Optional[str] = None
+) -> Optional[str]:
     """
     Process a detected student face on a given camera.
     Returns: 'IN', 'OUT', or None (if skipped due to cooldown).
@@ -50,16 +55,23 @@ def process_student_detection(student_id: str, camera_id: str, student_info: dic
         _cooldown_registry[(student_id, camera_id)] = now
         _cooldown_registry[student_id] = (camera_id, now)
 
-    # 2. Determine target direction based on camera ID
-    # Camera 01 (Entry) -> IN
-    # Camera 02 (Exit)  -> OUT
-    if "ENTRY" in camera_id.upper() or camera_id == "CAM_01_ENTRY":
+    # 2. Determine target direction based on camera mode or camera ID
+    mode_norm = (camera_mode or "").strip().upper()
+    current_status = student_info.get("current_status", "IN")
+
+    if mode_norm == "AUTO":
+        # Smart Auto-Toggle: Flip state based on current status
+        target_direction = "OUT" if current_status == "IN" else "IN"
+    elif mode_norm == "IN":
+        target_direction = "IN"
+    elif mode_norm == "OUT":
+        target_direction = "OUT"
+    elif "ENTRY" in camera_id.upper() or camera_id == "CAM_01_ENTRY":
         target_direction = "IN"
     elif "EXIT" in camera_id.upper() or camera_id == "CAM_02_EXIT":
         target_direction = "OUT"
     else:
         logger.warning(f"Unknown camera_id: {camera_id}. Defaulting direction based on current status.")
-        current_status = student_info.get("current_status", "IN")
         target_direction = "OUT" if current_status == "IN" else "IN"
 
     # 2b. Debounce if student is already in target state (e.g. loitering past gate)

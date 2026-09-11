@@ -104,6 +104,12 @@ MIN_PASSWORD_LENGTH: int = int(os.environ.get("MIN_PASSWORD_LENGTH", "8"))
 OTP_RANGE_START: int = 100_000
 OTP_RANGE_SIZE: int = 900_000
 
+# JWT Auth
+JWT_SECRET_KEY: str = os.environ.get("JWT_SECRET_KEY") or os.environ.get("FLASK_SECRET_KEY", "biosecure-hostel-jwt-secret-key-2026")
+JWT_ALGORITHM: str = os.environ.get("JWT_ALGORITHM", "HS256")
+JWT_EXPIRATION_HOURS: int = int(os.environ.get("JWT_EXPIRATION_HOURS", "24"))
+
+
 # -------------------------
 # Logging
 # -------------------------

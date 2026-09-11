@@ -472,9 +472,8 @@ class CameraStreamWorker:
 
     def get_latest_jpeg(self) -> bytes:
         """Return latest encoded JPEG frame bytes or fallback with live timestamp."""
-        # When worker is not ONLINE (e.g. RECONNECTING backoff sleep, CONNECTING, etc.),
-        # dynamically generate a fresh synthetic frame so the live clock advances smoothly.
-        if self.status != "ONLINE":
+        # When worker is not ONLINE or SHARED_WEBCAM, dynamically generate a fresh synthetic frame
+        if self.status not in ("ONLINE", "SHARED_WEBCAM"):
             return _create_synthetic_diagnostic_frame(
                 self.role, self.status, self.status_detail
             )
@@ -545,6 +544,22 @@ class CameraStreamWorker:
                 )
                 self._update_jpeg(synth)
                 time.sleep(1.0)
+                continue
+
+            # Shared single-webcam mode handling for OUT role to prevent hardware camera lock contention
+            if self.role == "OUT" and get_camera_manager().get_camera_mode() != "DUAL":
+                self.status = "SHARED_WEBCAM"
+                self.status_detail = "Shared single webcam active (managed via IN Gate)"
+                if self.cap and self.cap.isOpened():
+                    try:
+                        self.cap.release()
+                    except Exception:
+                        pass
+                    self.cap = None
+                in_jpeg = get_camera_manager().get_latest_jpeg("IN")
+                if in_jpeg:
+                    self._update_jpeg(in_jpeg)
+                time.sleep(0.05)
                 continue
 
             # Open stream if not currently open
@@ -758,28 +773,35 @@ class CameraStreamWorker:
                                     if not room:
                                         room = student_info.get("room_number", "")
 
-                                    # Process student detection via state machine
+                                    # Process student detection via state machine with active camera mode
+                                    active_mode = get_camera_manager().get_camera_mode()
                                     target_dir = hostel_state.process_student_detection(
                                         student_id=student_id,
                                         camera_id=self.camera_id,
                                         student_info=student_info,
+                                        camera_mode=active_mode if active_mode != "DUAL" else None,
                                     )
 
-                                    current_status = student_info.get(
-                                        "current_status", self.direction
-                                    )
-                                    if target_dir:
-                                        current_status = target_dir
+                                    if active_mode == "OUT":
+                                        display_status = "OUT"
+                                    elif active_mode == "IN":
+                                        display_status = "IN"
+                                    elif target_dir:
+                                        display_status = target_dir
+                                    else:
+                                        display_status = student_info.get(
+                                            "current_status", self.direction
+                                        )
 
                                     box_color = (
                                         (129, 185, 16)
-                                        if current_status == "IN"
+                                        if display_status == "IN"
                                         else (11, 158, 245)
                                     )
                                     new_overlays.append({
                                         "bbox": (x1, y1, x2, y2),
                                         "color": box_color,
-                                        "label": f"{name} [{current_status}] - {sim*100:.0f}%",
+                                        "label": f"{name} [{display_status}] - {sim*100:.0f}%",
                                         "sub_label": f"Roll: {roll} | Room: {room}",
                                     })
                                 else:
@@ -863,6 +885,34 @@ class HostelCameraManager:
         self.lock_file = None
         self.ipc_thread: Optional[threading.Thread] = None
         self.last_signal_mtime: float = 0.0
+        self.camera_mode: str = "AUTO"
+
+    def get_camera_mode(self) -> str:
+        """Return current camera feed mode ('AUTO', 'IN', 'OUT', 'DUAL')."""
+        return getattr(self, "camera_mode", "AUTO")
+
+    def set_camera_mode(self, mode: str) -> str:
+        """
+        Update camera feed mode for single-webcam testing or dual mode.
+        Supported modes:
+        - 'AUTO': Smart auto-toggle based on student's current status (IN -> OUT, OUT -> IN).
+        - 'IN': Force all detections on shared camera to log as Entry (IN).
+        - 'OUT': Force all detections on shared camera to log as Exit (OUT).
+        - 'DUAL': Dual separate camera streams for Entry and Exit gates.
+        """
+        mode_norm = (mode or "").strip().upper()
+        valid_modes = ("AUTO", "IN", "OUT", "DUAL")
+        if mode_norm not in valid_modes:
+            raise ValueError(f"Invalid camera mode '{mode}'. Must be one of {valid_modes}")
+        self.camera_mode = mode_norm
+        try:
+            from src.utils.hostel_state import _cooldown_registry, _cooldown_lock
+            with _cooldown_lock:
+                _cooldown_registry.clear()
+        except Exception:
+            pass
+        logger.info(f"Camera feed mode updated to: {self.camera_mode}")
+        return self.camera_mode
 
     def start(self, camera_index: int = 0):
         """Acquire process lock and start concurrent IN and OUT workers."""
@@ -967,6 +1017,13 @@ class HostelCameraManager:
         if role_norm not in ("IN", "OUT"):
             role_norm = "IN"
 
+        # In single webcam shared mode (AUTO, IN, OUT), return primary IN worker frame for both roles
+        if self.get_camera_mode() != "DUAL":
+            if self.is_primary and "IN" in self.workers:
+                in_bytes = self.workers["IN"].get_latest_jpeg()
+                if in_bytes and len(in_bytes) > 200:
+                    return in_bytes
+
         if self.is_primary and role_norm in self.workers:
             return self.workers[role_norm].get_latest_jpeg()
 
@@ -980,7 +1037,7 @@ class HostelCameraManager:
                 pass
 
         legacy_path = os.path.join(TEMP_DIR, "hostel_live_frame.jpg")
-        if role_norm == "IN" and os.path.exists(legacy_path):
+        if os.path.exists(legacy_path):
             try:
                 with open(legacy_path, "rb") as f:
                     return f.read()
@@ -1002,6 +1059,12 @@ class HostelCameraManager:
         role_norm = role.strip().upper() if role else "IN"
         if role_norm not in ("IN", "OUT"):
             role_norm = "IN"
+
+        # In single webcam shared mode (AUTO, IN, OUT), serve IN worker stream for both roles
+        if self.get_camera_mode() != "DUAL":
+            if self.is_primary and "IN" in self.workers:
+                yield from self.workers["IN"].generate_mjpeg_stream()
+                return
 
         if self.is_primary and role_norm in self.workers:
             yield from self.workers[role_norm].generate_mjpeg_stream()

@@ -50,9 +50,6 @@
             <a href="/hostel/curfew" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
                 <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
             </a>
-            <a href="/admin/cameras" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
-                <i data-lucide="video" class="w-4 h-4 text-indigo-600"></i> Camera Setup
-            </a>
         </nav>
 
         <div class="flex items-center space-x-4">
@@ -81,9 +78,6 @@
         </a>
         <a href="/hostel/curfew" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
             <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
-        </a>
-        <a href="/admin/cameras" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
-            <i data-lucide="video" class="w-4 h-4 text-indigo-600"></i> Camera Setup
         </a>
     </div>
 
@@ -172,6 +166,44 @@
             </div>
         </section>
 
+        <!-- Single Webcam / Camera Feed Mode Toggler Toolbar -->
+        <section class="glass-panel p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-lg border border-indigo-500/30 mb-6">
+            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2.5 bg-indigo-500/20 rounded-xl border border-indigo-400/30 text-indigo-300">
+                        <i data-lucide="camera" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <h3 class="font-bold text-base text-white">Local Testing Camera Feed Control</h3>
+                            <span id="activeModeBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/40 font-mono font-bold">
+                                MODE: AUTO-TOGGLE
+                            </span>
+                        </div>
+                        <p id="activeModeDesc" class="text-xs text-slate-300 mt-0.5">
+                            Shared single webcam active — automatically toggles IN & OUT based on student hostel status.
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Quick Mode Switcher Buttons -->
+                <div class="flex items-center flex-wrap gap-2">
+                    <button onclick="setCameraMode('AUTO')" id="btnModeAuto" class="text-xs px-3.5 py-2 rounded-xl bg-indigo-600 font-bold text-white shadow-md transition flex items-center gap-1.5 border border-indigo-400/50 ring-2 ring-indigo-400/30">
+                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Auto-Toggle (In/Out)
+                    </button>
+                    <button onclick="setCameraMode('IN')" id="btnModeIn" class="text-xs px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-semibold transition flex items-center gap-1.5 border border-slate-700">
+                        <i data-lucide="log-in" class="w-3.5 h-3.5 text-emerald-400"></i> Entry Only (IN)
+                    </button>
+                    <button onclick="setCameraMode('OUT')" id="btnModeOut" class="text-xs px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-semibold transition flex items-center gap-1.5 border border-slate-700">
+                        <i data-lucide="log-out" class="w-3.5 h-3.5 text-amber-400"></i> Exit Only (OUT)
+                    </button>
+                    <button onclick="setCameraMode('DUAL')" id="btnModeDual" class="text-xs px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-semibold transition flex items-center gap-1.5 border border-slate-700">
+                        <i data-lucide="video" class="w-3.5 h-3.5 text-purple-400"></i> Dual RTSP Feeds
+                    </button>
+                </div>
+            </div>
+        </section>
+
         <!-- Gate Camera Live Feeds from Host System Computer -->
         <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <!-- Camera 01: ENTRY GATE -->
@@ -185,9 +217,6 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-mono bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-200 font-bold">LOGS: IN</span>
-                        <a href="/admin/cameras" class="text-xs text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1">
-                            <i data-lucide="settings" class="w-3.5 h-3.5"></i> Setup
-                        </a>
                     </div>
                 </div>
                 <div class="relative aspect-video bg-slate-900 rounded-xl overflow-hidden border border-slate-800 shadow-inner flex items-center justify-center">
@@ -216,9 +245,6 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <span class="text-xs font-mono bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full border border-amber-200 font-bold">LOGS: OUT</span>
-                        <a href="/admin/cameras" class="text-xs text-amber-600 hover:text-amber-800 font-medium flex items-center gap-1">
-                            <i data-lucide="settings" class="w-3.5 h-3.5"></i> Setup
-                        </a>
                     </div>
                 </div>
                 <div class="relative aspect-video bg-slate-900 rounded-xl overflow-hidden border border-slate-800 shadow-inner flex items-center justify-center">
@@ -403,7 +429,60 @@
             }
         }
 
+        async function fetchCameraMode() {
+            try {
+                const res = await fetch('/hostel/api/camera_mode');
+                if (res.ok) {
+                    const data = await res.json();
+                    updateCameraModeUI(data.mode, data.description);
+                }
+            } catch (e) {
+                console.error("Error fetching camera mode:", e);
+            }
+        }
+
+        async function setCameraMode(targetMode) {
+            try {
+                const res = await fetch('/hostel/api/camera_mode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode: targetMode })
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    updateCameraModeUI(data.mode, data.description);
+                }
+            } catch (e) {
+                console.error("Error setting camera mode:", e);
+            }
+        }
+
+        function updateCameraModeUI(mode, desc) {
+            const badge = document.getElementById('activeModeBadge');
+            const descEl = document.getElementById('activeModeDesc');
+            if (badge) badge.innerText = 'MODE: ' + (mode || 'AUTO');
+            if (descEl && desc) descEl.innerText = desc || 'Single webcam active for local testing.';
+
+            const buttons = {
+                'AUTO': 'btnModeAuto',
+                'IN': 'btnModeIn',
+                'OUT': 'btnModeOut',
+                'DUAL': 'btnModeDual'
+            };
+
+            Object.keys(buttons).forEach(m => {
+                const btn = document.getElementById(buttons[m]);
+                if (!btn) return;
+                if (m === mode) {
+                    btn.className = "text-xs px-3.5 py-2 rounded-xl bg-indigo-600 font-bold text-white shadow-md transition flex items-center gap-1.5 border border-indigo-400/50 ring-2 ring-indigo-400/30";
+                } else {
+                    btn.className = "text-xs px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-semibold transition flex items-center gap-1.5 border border-slate-700";
+                }
+            });
+        }
+
         loadHostelData();
+        fetchCameraMode();
         setInterval(loadHostelData, 5000); // Auto refresh logs & stats every 5s
     </script>
 </body>
