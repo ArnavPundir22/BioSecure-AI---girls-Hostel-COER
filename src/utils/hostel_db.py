@@ -13,7 +13,7 @@ import time
 import urllib.parse
 import uuid
 from datetime import date, datetime, timezone
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 logger = logging.getLogger(__name__)
 
@@ -665,6 +665,7 @@ def insert_movement_log(
     camera_id: str,
     confidence: float = 1.0,
     snapshot_url: Optional[str] = None,
+    notes: Optional[str] = None,
     client: Optional[Any] = None
 ) -> Optional[int]:
     """Insert an entry into girls_hostel.movement_logs."""
@@ -677,6 +678,9 @@ def insert_movement_log(
             "confidence": confidence,
             "snapshot_url": snapshot_url
         }
+        if notes is not None:
+            payload["notes"] = notes
+
         res = c.table("movement_logs").insert(payload).execute()
         if res.data and len(res.data) > 0:
             log_id = res.data[0].get("id")
@@ -700,7 +704,7 @@ def get_recent_movement_logs(
     try:
         c = get_hostel_client(client)
         columns = (
-            "id, direction, camera_id, timestamp, confidence, snapshot_url, "
+            "id, direction, camera_id, timestamp, confidence, snapshot_url, notes, "
             "student_id, student_profiles(name, roll_number, room_number)"
         )
         res = (
@@ -717,6 +721,82 @@ def get_recent_movement_logs(
             return res.data or []
         logger.error(f"Error fetching movement logs: {e}")
         return []
+
+
+def record_manual_movement(
+    student_id: str,
+    direction: str,
+    notes: Optional[str] = None,
+    camera_id: str = "MANUAL_ENTRY",
+    client: Optional[Any] = None
+) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
+    """
+    Record a manual IN or OUT movement for a student by warden.
+    
+    1. Validates student exists.
+    2. Updates student current_status ('IN' or 'OUT') and last_movement_time.
+    3. Inserts a movement log entry with camera_id='MANUAL_ENTRY' (or custom),
+       confidence=1.0, and notes.
+    4. If direction is 'IN', automatically resolves any open OVERDUE_OUT curfew alerts for the student.
+    
+    Returns (success: bool, message: str, student_profile: Optional[Dict[str, Any]])
+    """
+    try:
+        dir_clean = str(direction).strip().upper()
+        if dir_clean not in ("IN", "OUT"):
+            return False, "Invalid movement direction. Must be 'IN' or 'OUT'.", None
+
+        c = get_hostel_client(client)
+        student = get_student_by_id(student_id, client=c)
+        if not student:
+            return False, f"Student record with ID '{student_id}' not found.", None
+
+        student_name = student.get("name", "Student")
+        roll_number = student.get("roll_number", "")
+
+        status_updated = update_student_status(student_id=student_id, status=dir_clean, client=c)
+        if not status_updated:
+            return False, f"Failed to update status for student '{student_name}'.", None
+
+        note_text = notes.strip() if notes and notes.strip() else f"Manual {dir_clean} entry by warden"
+
+        log_id = insert_movement_log(
+            student_id=student_id,
+            direction=dir_clean,
+            camera_id=camera_id,
+            confidence=1.0,
+            snapshot_url=None,
+            notes=note_text,
+            client=c
+        )
+
+        resolved_alerts_count = 0
+        if dir_clean == "IN":
+            try:
+                alerts = get_active_curfew_alerts(client=c)
+                for alert in alerts:
+                    if str(alert.get("student_id")) == str(student_id):
+                        alert_id = alert.get("id")
+                        if alert_id:
+                            resolve_curfew_alert(
+                                alert_id=alert_id,
+                                status="RESOLVED",
+                                notes=f"Auto-resolved upon manual IN entry by warden ({note_text})",
+                                client=c
+                            )
+                            resolved_alerts_count += 1
+            except Exception as alert_err:
+                logger.warning(f"Failed to auto-resolve curfew alert for student {student_id}: {alert_err}")
+
+        updated_student = get_student_by_id(student_id, client=c)
+        msg = f"Manual {dir_clean} entry recorded for {student_name} ({roll_number})."
+        if resolved_alerts_count > 0:
+            msg += f" Auto-resolved {resolved_alerts_count} overdue curfew alert(s)."
+
+        return True, msg, updated_student
+    except Exception as e:
+        logger.error(f"Error in record_manual_movement for student {student_id}: {e}")
+        return False, str(e), None
 
 
 def fetch_recent_movement_logs(

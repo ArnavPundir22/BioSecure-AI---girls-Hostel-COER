@@ -53,6 +53,10 @@
         </nav>
 
         <div class="flex items-center space-x-4">
+            <button onclick="openManualEntryModal()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5 transition">
+                <i data-lucide="user-check" class="w-4 h-4"></i> Manual Entry
+            </button>
+
             <div class="text-right hidden sm:block">
                 <div class="text-xs text-slate-500 font-medium">Current Server Time</div>
                 <div id="liveClock" class="font-mono text-sm text-indigo-700 font-bold">10:25:00 AM</div>
@@ -370,9 +374,18 @@
                         tbody.innerHTML = logsData.logs.map(l => {
                             const sp = l.student_profiles || {};
                             const isOut = l.direction === 'OUT';
+                            const isManual = l.camera_id === 'MANUAL_ENTRY';
+                            const camBadge = isManual
+                                ? `<span class="px-2 py-0.5 rounded text-[11px] bg-purple-100 text-purple-700 border border-purple-200 font-bold flex items-center gap-1 w-max"><i data-lucide="user-check" class="w-3 h-3"></i> MANUAL (Warden)</span>`
+                                : `<span class="font-mono text-xs text-slate-600">${l.camera_id}</span>`;
+                            const notesText = l.notes ? `<div class="text-[11px] text-slate-500 italic mt-0.5">${l.notes}</div>` : '';
+
                             return `
                                 <tr class="hover:bg-slate-50 transition">
-                                    <td class="px-4 py-3 font-semibold text-slate-900">${sp.name || 'N/A'}</td>
+                                    <td class="px-4 py-3 font-semibold text-slate-900">
+                                        ${sp.name || 'Unknown Student'}
+                                        ${notesText}
+                                    </td>
                                     <td class="px-4 py-3 text-slate-600 font-mono">${sp.roll_number || 'N/A'}</td>
                                     <td class="px-4 py-3 text-slate-600">${sp.room_number || 'N/A'}</td>
                                     <td class="px-4 py-3">
@@ -380,11 +393,12 @@
                                             ${l.direction}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3 text-xs text-slate-600 font-mono">${l.camera_id}</td>
+                                    <td class="px-4 py-3">${camBadge}</td>
                                     <td class="px-4 py-3 text-xs text-slate-600 font-mono">${new Date(l.timestamp).toLocaleString()}</td>
                                 </tr>
                             `;
                         }).join('');
+                        lucide.createIcons();
                     } else {
                         tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-8 text-center text-slate-500">No movement logs recorded yet.</td></tr>';
                     }
@@ -481,10 +495,188 @@
             });
         }
 
+        // ==========================================
+        // Manual IN/OUT Entry Warden Modal Logic
+        // ==========================================
+        let cachedStudentsForModal = [];
+
+        async function openManualEntryModal(preselectStudentId = null, preselectDir = 'IN') {
+            const modal = document.getElementById('manualEntryModal');
+            const alertBox = document.getElementById('manualEntryAlert');
+            const selectEl = document.getElementById('manualStudentSelect');
+            
+            if (alertBox) alertBox.classList.add('hidden');
+            if (modal) modal.classList.remove('hidden');
+
+            // Populate direction radio
+            const dirRadios = document.getElementsByName('manualDirection');
+            for (const r of dirRadios) {
+                r.checked = (r.value === preselectDir);
+            }
+
+            try {
+                selectEl.innerHTML = '<option value="">Loading students...</option>';
+                const res = await fetch('/hostel/api/students');
+                if (res.ok) {
+                    const data = await res.json();
+                    cachedStudentsForModal = data.students || [];
+                    selectEl.innerHTML = '<option value="">-- Select Student --</option>' + 
+                        cachedStudentsForModal.map(s => `
+                            <option value="${s.id}" ${s.id === preselectStudentId ? 'selected' : ''}>
+                                ${s.name} (Roll: ${s.roll_number} | Room: ${s.room_number} | Status: ${s.current_status || 'IN'})
+                            </option>
+                        `).join('');
+                }
+            } catch(e) {
+                console.error("Error loading students for modal:", e);
+                selectEl.innerHTML = '<option value="">Failed to load students</option>';
+            }
+
+            lucide.createIcons();
+        }
+
+        function closeManualEntryModal() {
+            const modal = document.getElementById('manualEntryModal');
+            if (modal) modal.classList.add('hidden');
+            document.getElementById('manualEntryForm').reset();
+        }
+
+        async function submitManualEntry(event) {
+            event.preventDefault();
+            const btn = document.getElementById('btnSubmitManualEntry');
+            const alertBox = document.getElementById('manualEntryAlert');
+            const studentId = document.getElementById('manualStudentSelect').value;
+            const dirRadios = document.getElementsByName('manualDirection');
+            let direction = 'IN';
+            for (const r of dirRadios) {
+                if (r.checked) direction = r.value;
+            }
+            const notes = document.getElementById('manualNotes').value;
+
+            if (!studentId) {
+                alertBox.className = "text-xs p-3 rounded-xl bg-rose-100 text-rose-800 border border-rose-200 block";
+                alertBox.innerText = "Please select a student.";
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Processing...';
+            lucide.createIcons();
+
+            try {
+                const res = await fetch('/hostel/api/manual_entry', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        student_id: studentId,
+                        direction: direction,
+                        notes: notes
+                    })
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    alertBox.className = "text-xs p-3 rounded-xl bg-emerald-100 text-emerald-800 border border-emerald-200 block font-medium";
+                    alertBox.innerText = data.message || "Manual entry recorded successfully!";
+                    setTimeout(() => {
+                        closeManualEntryModal();
+                        loadHostelData();
+                    }, 1200);
+                } else {
+                    alertBox.className = "text-xs p-3 rounded-xl bg-rose-100 text-rose-800 border border-rose-200 block";
+                    alertBox.innerText = data.error || "Failed to record entry.";
+                }
+            } catch(e) {
+                console.error("Error submitting manual entry:", e);
+                alertBox.className = "text-xs p-3 rounded-xl bg-rose-100 text-rose-800 border border-rose-200 block";
+                alertBox.innerText = "Network error while saving entry.";
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i data-lucide="check-circle" class="w-4 h-4"></i> Record Movement';
+                lucide.createIcons();
+            }
+        }
+
         loadHostelData();
         fetchCameraMode();
         setInterval(loadHostelData, 5000); // Auto refresh logs & stats every 5s
     </script>
+
+    <!-- Manual Entry Modal Container -->
+    <div id="manualEntryModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden transform transition-all">
+            <!-- Modal Header -->
+            <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-2.5">
+                    <div class="p-2 bg-indigo-600/30 rounded-lg text-indigo-400 border border-indigo-500/30">
+                        <i data-lucide="user-check" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-base text-white">Manual Gate Entry / Exit</h3>
+                        <p class="text-xs text-slate-400">Record warden override or manual movement</p>
+                    </div>
+                </div>
+                <button onclick="closeManualEntryModal()" class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Modal Form -->
+            <form id="manualEntryForm" onsubmit="submitManualEntry(event)" class="p-6 space-y-5">
+                <!-- Student Selection -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                        Select Hostel Student <span class="text-rose-500">*</span>
+                    </label>
+                    <select id="manualStudentSelect" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 font-medium">
+                        <option value="">-- Choose Student --</option>
+                    </select>
+                </div>
+
+                <!-- Direction Selection -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                        Movement Direction <span class="text-rose-500">*</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="manualDirection" value="IN" checked class="peer sr-only">
+                            <div class="px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 peer-checked:bg-emerald-50 peer-checked:border-emerald-500 peer-checked:text-emerald-700 font-bold text-sm text-slate-600 flex items-center justify-center gap-2 transition shadow-sm">
+                                <i data-lucide="log-in" class="w-4 h-4 text-emerald-600"></i> ENTRY (IN)
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="manualDirection" value="OUT" class="peer sr-only">
+                            <div class="px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 peer-checked:bg-amber-50 peer-checked:border-amber-500 peer-checked:text-amber-700 font-bold text-sm text-slate-600 flex items-center justify-center gap-2 transition shadow-sm">
+                                <i data-lucide="log-out" class="w-4 h-4 text-amber-600"></i> EXIT (OUT)
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Warden Remarks / Notes -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                        Warden Remarks / Gate Pass Details
+                    </label>
+                    <textarea id="manualNotes" rows="2" placeholder="e.g. Verified gate pass #104, manual check by warden..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 resize-none"></textarea>
+                </div>
+
+                <!-- Alert Message Box -->
+                <div id="manualEntryAlert" class="hidden text-xs p-3 rounded-xl"></div>
+
+                <!-- Form Actions -->
+                <div class="flex items-center justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeManualEntryModal()" class="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">
+                        Cancel
+                    </button>
+                    <button type="submit" id="btnSubmitManualEntry" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-md transition flex items-center gap-2">
+                        <i data-lucide="check-circle" class="w-4 h-4"></i> Record Movement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </body>
 </html>
 

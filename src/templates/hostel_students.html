@@ -577,9 +577,46 @@
                             <div>Block: <span class="text-slate-900 font-semibold">${s.hostel_block}</span></div>
                             <div class="col-span-2">Parent Phone: <a href="tel:${s.parent_contact}" class="text-indigo-600 font-mono font-semibold underline">${s.parent_contact}</a></div>
                         </div>
+
+                        <div class="flex items-center gap-2 pt-3 border-t border-slate-100">
+                            <button onclick="quickManualEntry('${s.id}', 'IN', '${s.name.replace(/'/g, "\\'")}')" class="flex-1 py-1.5 px-3 rounded-lg ${!isOut ? 'bg-emerald-50 text-emerald-700 border-emerald-200 opacity-60' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'} border font-bold text-xs flex items-center justify-center gap-1 transition">
+                                <i data-lucide="log-in" class="w-3.5 h-3.5"></i> Mark IN
+                            </button>
+                            <button onclick="quickManualEntry('${s.id}', 'OUT', '${s.name.replace(/'/g, "\\'")}')" class="flex-1 py-1.5 px-3 rounded-lg ${isOut ? 'bg-amber-50 text-amber-700 border-amber-200 opacity-60' : 'bg-amber-600 hover:bg-amber-700 text-white shadow-sm'} border font-bold text-xs flex items-center justify-center gap-1 transition">
+                                <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Mark OUT
+                            </button>
+                        </div>
                     </div>
                 `;
             }).join('');
+            lucide.createIcons();
+        }
+
+        async function quickManualEntry(studentId, direction, studentName) {
+            const notes = prompt(`Record Manual ${direction} Entry for ${studentName}.\n\nEnter remarks/notes (optional):`, `Manual ${direction} entry by warden`);
+            if (notes === null) return; // cancelled
+
+            try {
+                const res = await fetch('/hostel/api/manual_entry', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        student_id: studentId,
+                        direction: direction,
+                        notes: notes
+                    })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    alert(data.message || `Recorded manual ${direction} entry for ${studentName}!`);
+                    loadStudents();
+                } else {
+                    alert(`Failed to record entry: ${data.error}`);
+                }
+            } catch(e) {
+                console.error("Error in quickManualEntry:", e);
+                alert("Network error while recording entry.");
+            }
         }
 
         function filterStudents() {

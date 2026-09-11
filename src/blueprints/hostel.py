@@ -281,6 +281,45 @@ def resolve_alert():
         logger.error(f"Error resolving alert: {e}")
         return jsonify({"error": str(e)}), 500
 
+@hostel_bp.route("/api/manual_entry", methods=["POST"])
+def manual_entry_api():
+    """
+    Manually record student IN or OUT entry by warden.
+    Accepts JSON or Form data with:
+    - student_id: UUID of student
+    - direction: 'IN' or 'OUT'
+    - notes / remarks: Optional reason or notes
+    """
+    try:
+        data = request.get_json(silent=True) or request.form or {}
+        student_id = data.get("student_id")
+        direction = data.get("direction")
+        notes = data.get("notes") or data.get("remarks") or ""
+
+        if not student_id:
+            return jsonify({"error": "student_id is required"}), 400
+        if not direction:
+            return jsonify({"error": "direction ('IN' or 'OUT') is required"}), 400
+
+        success, message, student = hostel_db.record_manual_movement(
+            student_id=student_id,
+            direction=direction,
+            notes=notes,
+            camera_id="MANUAL_ENTRY"
+        )
+
+        if not success:
+            return jsonify({"error": message}), 400
+
+        return jsonify({
+            "status": "success",
+            "message": message,
+            "student": student
+        }), 200
+    except Exception as e:
+        logger.error(f"Error processing manual entry API: {e}")
+        return jsonify({"error": str(e)}), 500
+
 @hostel_bp.route("/api/camera_mode", methods=["GET", "POST"])
 def camera_mode_api():
     """Get or update current camera feed mode for local single webcam testing."""
