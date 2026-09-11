@@ -17,15 +17,20 @@ Features:
 import base64
 import copy
 import cv2
-import fcntl
 import logging
 import os
 import random
 import re
+import tempfile
 import threading
 import time
 from datetime import datetime, timezone
 from typing import Any, Dict, Generator, List, Optional, Tuple, Union
+
+try:
+    import fcntl
+except ImportError:
+    fcntl = None
 
 import numpy as np
 
@@ -43,9 +48,10 @@ logger = logging.getLogger(__name__)
 # Global AI inference lock to prevent CPU core contention between IN and OUT workers
 _ai_inference_lock = threading.Lock()
 
-# IPC Signal & Lock File Paths
-LOCK_PATH = "/tmp/hostel_camera_device.lock"
-CAMERA_RELOAD_SIGNAL_PATH = "/tmp/hostel_camera_reload.signal"
+# IPC Signal & Lock File Paths (Cross-Platform using system temp directory)
+TEMP_DIR = tempfile.gettempdir()
+LOCK_PATH = os.path.join(TEMP_DIR, "hostel_camera_device.lock")
+CAMERA_RELOAD_SIGNAL_PATH = os.path.join(TEMP_DIR, "hostel_camera_reload.signal")
 
 
 def _mask_rtsp_url(url: Any) -> str:
@@ -109,7 +115,12 @@ def _open_capture_with_timeout(
 
     def _open_target():
         try:
-            cap = cv2.VideoCapture(source)
+            if isinstance(source, int) and os.name == "nt":
+                cap = cv2.VideoCapture(source, cv2.CAP_DSHOW)
+                if not cap.isOpened():
+                    cap = cv2.VideoCapture(source)
+            else:
+                cap = cv2.VideoCapture(source)
             if hasattr(cv2, "CAP_PROP_OPEN_TIMEOUT_MSEC"):
                 cap.set(cv2.CAP_PROP_OPEN_TIMEOUT_MSEC, int(timeout_sec * 1000))
             if hasattr(cv2, "CAP_PROP_READ_TIMEOUT_MSEC"):
@@ -417,9 +428,9 @@ class CameraStreamWorker:
         self.MIN_MATCH_THRESHOLD = 0.28
 
         # Disk frame paths for inter-process reading
-        self.frame_path = f"/tmp/hostel_live_frame_{self.role.lower()}.jpg"
+        self.frame_path = os.path.join(TEMP_DIR, f"hostel_live_frame_{self.role.lower()}.jpg")
         self.legacy_frame_path = (
-            "/tmp/hostel_live_frame.jpg" if self.role == "IN" else None
+            os.path.join(TEMP_DIR, "hostel_live_frame.jpg") if self.role == "IN" else None
         )
 
     def start(self):
@@ -867,7 +878,14 @@ class HostelCameraManager:
         # Attempt to acquire device lock for multi-worker Gunicorn environments
         try:
             self.lock_file = open(LOCK_PATH, "w")
-            fcntl.flock(self.lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            if fcntl is not None:
+                fcntl.flock(self.lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            else:
+                try:
+                    import msvcrt
+                    msvcrt.locking(self.lock_file.fileno(), msvcrt.LK_NBLCK, 1)
+                except Exception:
+                    pass
             self.is_primary = True
             logger.info(
                 f"Worker PID {os.getpid()} acquired camera hardware lock ({LOCK_PATH})."
@@ -904,7 +922,14 @@ class HostelCameraManager:
 
         if self.lock_file:
             try:
-                fcntl.flock(self.lock_file, fcntl.LOCK_UN)
+                if fcntl is not None:
+                    fcntl.flock(self.lock_file, fcntl.LOCK_UN)
+                else:
+                    try:
+                        import msvcrt
+                        msvcrt.locking(self.lock_file.fileno(), msvcrt.LK_UNLCK, 1)
+                    except Exception:
+                        pass
                 self.lock_file.close()
             except Exception:
                 pass
@@ -946,7 +971,7 @@ class HostelCameraManager:
             return self.workers[role_norm].get_latest_jpeg()
 
         # Client mode (or primary without active worker): read from disk
-        target_path = f"/tmp/hostel_live_frame_{role_norm.lower()}.jpg"
+        target_path = os.path.join(TEMP_DIR, f"hostel_live_frame_{role_norm.lower()}.jpg")
         if os.path.exists(target_path):
             try:
                 with open(target_path, "rb") as f:
@@ -954,9 +979,10 @@ class HostelCameraManager:
             except Exception:
                 pass
 
-        if role_norm == "IN" and os.path.exists("/tmp/hostel_live_frame.jpg"):
+        legacy_path = os.path.join(TEMP_DIR, "hostel_live_frame.jpg")
+        if role_norm == "IN" and os.path.exists(legacy_path):
             try:
-                with open("/tmp/hostel_live_frame.jpg", "rb") as f:
+                with open(legacy_path, "rb") as f:
                     return f.read()
             except Exception:
                 pass

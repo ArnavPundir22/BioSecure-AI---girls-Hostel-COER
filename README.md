@@ -126,24 +126,37 @@ BioSecure AI - GIrls Hostel/
 git clone https://github.com/ArnavPundir22/BioSecure-AI---girls-Hostel-COER.git
 cd "BioSecure AI - GIrls Hostel"
 
+# Linux / macOS:
 python3 -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+source .venv/bin/activate
 pip install -r requirements.txt
+
+# Windows (Command Prompt / PowerShell):
+python -m venv .venv
+.venv\Scripts\activate
+pip install -r requirements-windows.txt
 ```
 
 ### 2. Environment Configuration
 Copy the example environment configuration:
 ```bash
+# Linux / macOS:
 cp .env.example .env
+
+# Windows (CMD):
+copy .env.example .env
 ```
 
 ### 3. Run Development Server
 ```bash
-# Using startup script
+# Windows (Double-click or run script):
+start_hostel.bat
+
+# Linux / macOS:
 chmod +x start_hostel.sh
 ./start_hostel.sh
 
-# Or directly with Python
+# Or directly with Python on any OS:
 python app.py
 ```
 Access the dashboard at `http://localhost:5000`.

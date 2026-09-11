@@ -899,7 +899,9 @@ def update_system_settings(
 # Camera Settings Persistence & RTSP Stream URL Utilities
 # ============================================================================
 
-CAMERA_RELOAD_SIGNAL_PATH = "/tmp/hostel_camera_reload.signal"
+import tempfile
+
+CAMERA_RELOAD_SIGNAL_PATH = os.path.join(tempfile.gettempdir(), "hostel_camera_reload.signal")
 
 
 def trigger_camera_reload_signal() -> None:
