@@ -705,7 +705,7 @@ def get_recent_movement_logs(
         c = get_hostel_client(client)
         columns = (
             "id, direction, camera_id, timestamp, confidence, snapshot_url, notes, "
-            "student_id, student_profiles(name, roll_number, room_number)"
+            "student_id, student_profiles(name, roll_number, room_number, parent_contact, student_contact)"
         )
         res = (
             c.table("movement_logs")
@@ -816,7 +816,7 @@ def get_active_curfew_alerts(
         columns = (
             "id, student_id, curfew_date, system_start_time, "
             "curfew_end_time, status, alert_triggered_at, resolved_at, notes, "
-            "student_profiles(name, roll_number, room_number, parent_contact, "
+            "student_profiles(name, roll_number, room_number, parent_contact, student_contact, "
             "last_movement_time)"
         )
         res = (

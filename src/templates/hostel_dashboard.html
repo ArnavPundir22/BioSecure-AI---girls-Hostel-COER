@@ -348,10 +348,19 @@
                                         <h3 class="font-bold text-rose-800">${sp.name || 'Unknown Student'}</h3>
                                         <span class="text-xs bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full border border-rose-200 font-bold">OVERDUE OUT</span>
                                     </div>
-                                    <div class="text-xs text-slate-600 space-y-1">
+                                    <div class="text-xs text-slate-600 space-y-2">
                                         <div>Roll: <span class="text-slate-900 font-semibold">${sp.roll_number || 'N/A'}</span> | Room: <span class="text-slate-900 font-semibold">${sp.room_number || 'N/A'}</span></div>
-                                        <div>Parent Phone: <a href="tel:${sp.parent_contact}" class="text-indigo-600 font-mono font-bold underline">${sp.parent_contact || 'N/A'}</a></div>
-                                        <div>Curfew Window: <span class="text-slate-700">17:00 - 19:30</span></div>
+                                        <div class="bg-rose-50/70 p-2.5 rounded-lg border border-rose-200/80 space-y-1.5">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-[10px] uppercase font-bold text-slate-500">Student Contact:</span>
+                                                ${sp.student_contact ? `<a href="tel:${sp.student_contact}" class="text-xs font-mono font-bold text-indigo-700 underline flex items-center gap-1"><i data-lucide="smartphone" class="w-3 h-3"></i> ${sp.student_contact}</a>` : `<span class="text-xs text-slate-400 italic">Not Provided</span>`}
+                                            </div>
+                                            <div class="flex items-center justify-between border-t border-rose-200/50 pt-1">
+                                                <span class="text-[10px] uppercase font-bold text-slate-500">Parent Contact:</span>
+                                                <a href="tel:${sp.parent_contact}" class="text-xs font-mono font-bold text-emerald-700 underline flex items-center gap-1"><i data-lucide="phone-call" class="w-3 h-3"></i> ${sp.parent_contact || 'N/A'}</a>
+                                            </div>
+                                        </div>
+                                        <div>Curfew Window: <span class="text-slate-700 font-medium">17:00 - 19:30</span></div>
                                     </div>
                                     <button onclick="resolveAlert(${a.id})" class="w-full mt-2 text-xs py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold transition shadow-sm">
                                         Mark Resolved / Note Reason
