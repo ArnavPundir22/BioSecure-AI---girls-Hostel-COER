@@ -59,7 +59,6 @@ Face-Attendance-System-Web-Version/
 ├── nginx/
 │   └── nginx.conf               # Nginx reverse-proxy config
 └── docs/                        # All documentation
-    ├── Agents.md
     ├── PRD.md
     ├── FAD.md
     ├── FTL.md

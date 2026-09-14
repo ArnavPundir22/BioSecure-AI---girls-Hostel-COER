@@ -188,13 +188,13 @@ except Exception as e:
 
 ---
 
-## 10. AI-Assisted Development Rules
+## 10. Developer Contribution Guidelines
 
-When using AI (Gemini, Claude, etc.) to modify this codebase:
+When modifying this codebase:
 
-- The AI **must read** `docs/memory.md` before making architectural decisions
-- The AI **must not** change route signatures without updating `docs/TAD.md`
-- The AI **must not** add new dependencies without updating `requirements.txt`
-- The AI **must** follow the error handling standard in section 8
-- The AI **must** use `logger.X()` not `print()` for any new log output
-- The AI **must** update `docs/FTL.md` for any feature changes
+- Developers **must review** `docs/memory.md` before making architectural decisions
+- Developers **must not** change route signatures without updating `docs/TAD.md`
+- Developers **must not** add new dependencies without updating `requirements.txt`
+- Developers **must** follow the error handling standard in section 8
+- Developers **must** use `logger.X()` not `print()` for any new log output
+- Developers **must** update `docs/FTL.md` for any feature changes

@@ -20,7 +20,7 @@
 | 2026-07-14 | ✅ Done | **Procfile** — PaaS deployment support (Render, Railway, Heroku) |
 | 2026-07-14 | ✅ Done | **gunicorn.conf.py** — centralised Gunicorn configuration |
 | 2026-07-14 | ✅ Done | **.env.example** — all 15 environment variables documented with descriptions |
-| 2026-07-14 | ✅ Done | **11 Documentation Files** — Agents, PRD, FAD, FTL, SAD, TAD, Architecture, Rules, Phases, Design, Memory |
+| 2026-07-14 | ✅ Done | **10 Documentation Files** — PRD, FAD, FTL, SAD, TAD, Architecture, Rules, Phases, Design, Memory |
 | 2026-07-14 | ✅ Done | **BioSecure AI Branding** — all docs updated to "BioSecure AI" |
 
 ---

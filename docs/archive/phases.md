@@ -56,7 +56,7 @@ A functional proof-of-concept. Ran locally on a single machine. No horizontal sc
 - [x] Separated anon/admin Supabase clients
 
 #### 2.4 — Documentation ✅
-- [x] Agents.md — AI agent definitions and interaction protocols
+- [x] System Components — Component definitions and protocols
 - [x] PRD.md — Product Requirements Document
 - [x] FAD.md — Feature Architecture Document
 - [x] FTL.md — Feature Tracking Log

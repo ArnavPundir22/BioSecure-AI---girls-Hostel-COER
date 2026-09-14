@@ -43,8 +43,19 @@ env/
 .DS_Store
 Thumbs.db
 
-# Logs & Agent Metadata
+# Logs, Prompts & Agent Metadata
 *.log
 .agents/
+.gemini/
+.antigravity/
+.claude/
+.cursor/
+brain/
+scratch/
+*_REQUEST.md
+ORIGINAL_REQUEST.md
+prompt_*.md
+implementation_plan.md
+walkthrough.md
 .pytest_cache/
 /tmp/hostel_*

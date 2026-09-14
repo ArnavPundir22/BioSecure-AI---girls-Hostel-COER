@@ -1,8 +1,7 @@
-# 🧠 Memory — BioSecure AI
-# AI Context & Decision Log
+# 🧠 Architecture & Decision Log — BioSecure AI
 
-> **Purpose**: This file is the persistent memory for AI-assisted development on this project.
-> Any AI agent working on this codebase **must read this file first** before making architectural decisions.
+> **Purpose**: This file is the persistent architectural decision log for this project.
+> Any developer working on this codebase should review this file before making architectural decisions.
 > It records decisions made, lessons learned, known gotchas, and important context.
 
 **Last Updated**: 2026-07-14  
@@ -141,7 +140,7 @@
 
 ---
 
-## AI Session Notes
+## Development Session Notes
 
 ### Session: 2026-07-14 — Production Refactor
 - Performed complete codebase analysis
