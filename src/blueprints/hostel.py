@@ -236,6 +236,118 @@ def register_student_api():
         logger.error(f"Error registering student: {e}")
         return jsonify({"error": str(e)}), 500
 
+@hostel_bp.route("/api/update_student/<student_id>", methods=["POST", "PUT"])
+@hostel_bp.route("/api/students/<student_id>", methods=["POST", "PUT"])
+def update_student_api(student_id):
+    """
+    Update student profile information and optional face photo/embedding in girls_hostel.student_profiles.
+    """
+    try:
+        # Determine content type: JSON or Multipart Form
+        if request.is_json:
+            data = request.get_json() or {}
+            name = data.get("name")
+            roll_number = data.get("roll_number")
+            room_number = data.get("room_number")
+            hostel_block = data.get("hostel_block", "Block-A")
+            parent_contact = data.get("parent_contact")
+            student_contact = data.get("student_contact", "")
+            current_status = data.get("current_status")
+            face_photo = None
+        else:
+            name = request.form.get("name")
+            roll_number = request.form.get("roll_number")
+            room_number = request.form.get("room_number")
+            hostel_block = request.form.get("hostel_block", "Block-A")
+            parent_contact = request.form.get("parent_contact")
+            student_contact = request.form.get("student_contact", "")
+            current_status = request.form.get("current_status")
+            face_photo = request.files.get("face_photo")
+
+        if not name or not roll_number or not room_number or not parent_contact:
+            return jsonify({"error": "Name, Roll Number, Room Number, and Parent Contact are required."}), 400
+
+        updates = {
+            "name": name,
+            "roll_number": roll_number,
+            "room_number": room_number,
+            "hostel_block": hostel_block,
+            "parent_contact": parent_contact,
+            "student_contact": student_contact
+        }
+        if current_status and current_status in ["IN", "OUT"]:
+            updates["current_status"] = current_status
+
+        # Handle optional Face Photo update & Embedding Extraction
+        embedding_list = None
+        if face_photo and face_photo.filename:
+            file_bytes = face_photo.read()
+            nparr = np.frombuffer(file_bytes, np.uint8)
+            img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+            if img is not None:
+                faces = face_model.get(img)
+                if len(faces) > 0:
+                    raw_emb = faces[0].embedding
+                    norm_emb = normalize_embedding(raw_emb)
+                    if norm_emb is not None:
+                        embedding_list = norm_emb.tolist()
+                        updates["embedding"] = embedding_list
+                        logger.info(f"Extracted updated 512D face embedding for student {student_id}")
+
+        success, msg, updated_student = hostel_db.update_student_profile(
+            student_id=student_id,
+            updates=updates
+        )
+
+        if not success:
+            return jsonify({"error": msg}), 400
+
+        # Update in-memory face cache
+        if updated_student:
+            if embedding_list:
+                add_student_to_cache(
+                    student_id=student_id,
+                    name=name,
+                    program="Hostel",
+                    branch=room_number,
+                    embedding=np.array(embedding_list, dtype=np.float32),
+                    roll_number=roll_number,
+                    room_number=room_number
+                )
+            else:
+                existing_emb = updated_student.get("embedding")
+                if existing_emb:
+                    if isinstance(existing_emb, str):
+                        try:
+                            import json
+                            existing_emb = json.loads(existing_emb)
+                        except Exception:
+                            import ast
+                            existing_emb = ast.literal_eval(existing_emb)
+                    emb_arr = np.array(existing_emb, dtype=np.float32)
+                    if emb_arr.shape == (512,):
+                        add_student_to_cache(
+                            student_id=student_id,
+                            name=name,
+                            program="Hostel",
+                            branch=room_number,
+                            embedding=emb_arr,
+                            roll_number=roll_number,
+                            room_number=room_number
+                        )
+
+        logger.info(f"Updated student profile '{student_id}' via API.")
+        return jsonify({
+            "status": "success",
+            "message": msg,
+            "student": updated_student
+        }), 200
+    except Exception as e:
+        logger.error(f"Error updating student profile {student_id}: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 @hostel_bp.route("/api/movement_logs")
 def get_movement_logs():
     """Return recent student entry/exit logs."""

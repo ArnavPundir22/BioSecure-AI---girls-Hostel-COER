@@ -544,6 +544,93 @@ def fetch_all_hostel_students(
         return []
 
 
+def update_student_profile(
+    student_id: str,
+    updates: Dict[str, Any],
+    client: Optional[Any] = None
+) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
+    """
+    Update details for an existing student profile in girls_hostel.student_profiles.
+    
+    Args:
+        student_id: UUID or ID string of student profile
+        updates: Dict containing fields to update (e.g. name, roll_number, room_number, parent_contact, etc.)
+        client: Optional DB client override
+        
+    Returns:
+        Tuple of (success: bool, message: str, updated_student_dict)
+    """
+    try:
+        c = get_hostel_client(client)
+
+        # 1. Fetch existing student profile
+        existing = get_student_by_id(student_id, client=c)
+        if not existing:
+            return False, f"Student profile with ID '{student_id}' not found.", None
+
+        # 2. Check roll_number uniqueness if roll_number is being changed
+        new_roll = updates.get("roll_number")
+        if new_roll and str(new_roll).strip() != str(existing.get("roll_number", "")).strip():
+            new_roll_clean = str(new_roll).strip()
+            try:
+                roll_check = c.table("student_profiles").select("id").eq("roll_number", new_roll_clean).execute()
+            except Exception as schema_err:
+                if "PGRST106" in str(schema_err) or "Invalid schema" in str(schema_err):
+                    c = get_mock_client()
+                    roll_check = c.table("student_profiles").select("id").eq("roll_number", new_roll_clean).execute()
+                else:
+                    raise
+
+            if roll_check.data:
+                for match in roll_check.data:
+                    if str(match.get("id")) != str(student_id):
+                        return False, f"Roll Number '{new_roll_clean}' is already assigned to another student.", None
+
+        # 3. Build payload (protect id field)
+        payload = copy.deepcopy(updates)
+        payload.pop("id", None)
+        payload_with_time = copy.deepcopy(payload)
+        payload_with_time["updated_at"] = datetime.now(timezone.utc).isoformat()
+
+        # 4. Perform database update with fallback handling for missing columns
+        try:
+            res = c.table("student_profiles").update(payload_with_time).eq("id", str(student_id)).execute()
+        except Exception as update_err:
+            err_str = str(update_err)
+            if "updated_at" in err_str or "PGRST204" in err_str:
+                logger.warning(f"updated_at column not present in student_profiles table schema: {update_err}. Retrying update without updated_at.")
+                try:
+                    res = c.table("student_profiles").update(payload).eq("id", str(student_id)).execute()
+                except Exception as retry_err:
+                    if "PGRST106" in str(retry_err) or "Invalid schema" in str(retry_err):
+                        c = get_mock_client()
+                        res = c.table("student_profiles").update(payload).eq("id", str(student_id)).execute()
+                    else:
+                        raise
+            elif "PGRST106" in err_str or "Invalid schema" in err_str:
+                logger.warning("girls_hostel schema update notice — using local mock client fallback.")
+                c = get_mock_client()
+                res = c.table("student_profiles").update(payload_with_time).eq("id", str(student_id)).execute()
+            else:
+                raise
+
+        if res.data and len(res.data) > 0:
+            updated_student = res.data[0]
+            logger.info(f"Successfully updated student profile '{student_id}' ({updated_student.get('name')}).")
+            return True, f"Student profile for '{updated_student.get('name')}' updated successfully.", updated_student
+
+        updated_student = get_student_by_id(student_id, client=c)
+        if updated_student:
+            return True, "Student profile updated successfully.", updated_student
+
+        return False, "Failed to update student profile record.", None
+    except Exception as e:
+        logger.error(f"Error updating student profile {student_id}: {e}")
+        return False, str(e), None
+
+
+
+
 def match_face_embedding(
     embedding: List[float],
     threshold: float = 0.40,
@@ -681,7 +768,16 @@ def insert_movement_log(
         if notes is not None:
             payload["notes"] = notes
 
-        res = c.table("movement_logs").insert(payload).execute()
+        try:
+            res = c.table("movement_logs").insert(payload).execute()
+        except Exception as insert_err:
+            if "PGRST106" in str(insert_err) or "Invalid schema" in str(insert_err) or "relation" in str(insert_err).lower():
+                logger.warning("girls_hostel schema not exposed in Supabase — using local mock client for movement log insert.")
+                c = get_mock_client()
+                res = c.table("movement_logs").insert(payload).execute()
+            else:
+                raise
+
         if res.data and len(res.data) > 0:
             log_id = res.data[0].get("id")
             logger.info(
@@ -703,24 +799,76 @@ def get_recent_movement_logs(
     """Fetch recent movement logs with student details."""
     try:
         c = get_hostel_client(client)
-        columns = (
-            "id, direction, camera_id, timestamp, confidence, snapshot_url, notes, "
-            "student_id, student_profiles(name, roll_number, room_number, parent_contact, student_contact)"
-        )
-        res = (
-            c.table("movement_logs")
-            .select(columns)
-            .order("timestamp", desc=True)
-            .limit(limit)
-            .execute()
-        )
-        return res.data or []
+        try:
+            res = (
+                c.table("movement_logs")
+                .select("*")
+                .order("timestamp", desc=True)
+                .limit(limit)
+                .execute()
+            )
+        except Exception as query_err:
+            if "PGRST106" in str(query_err) or "Invalid schema" in str(query_err) or "relation" in str(query_err).lower():
+                logger.warning("girls_hostel schema notice — using local mock client for movement logs.")
+                c = get_mock_client()
+                res = (
+                    c.table("movement_logs")
+                    .select("*")
+                    .order("timestamp", desc=True)
+                    .limit(limit)
+                    .execute()
+                )
+            else:
+                logger.error(f"Error executing movement_logs query: {query_err}")
+                return []
+
+        raw_logs = res.data or []
+        if not raw_logs:
+            return []
+
+        # Fetch students to resolve details in Python
+        students = fetch_all_hostel_students(client=c)
+        student_map = {}
+        for s in students:
+            sid = str(s.get("id", ""))
+            student_map[sid] = {
+                "name": s.get("name", "Unknown Student"),
+                "roll_number": s.get("roll_number", "N/A"),
+                "room_number": s.get("room_number", "N/A"),
+                "parent_contact": s.get("parent_contact", ""),
+                "student_contact": s.get("student_contact", "")
+            }
+
+        logs = []
+        for l in raw_logs:
+            log_item = copy.deepcopy(l)
+            sid = str(log_item.get("student_id", ""))
+            sp = log_item.get("student_profiles")
+            if not sp or not isinstance(sp, dict):
+                log_item["student_profiles"] = student_map.get(sid, {
+                    "name": "Unknown Student",
+                    "roll_number": "N/A",
+                    "room_number": "N/A",
+                    "parent_contact": "",
+                    "student_contact": ""
+                })
+            
+            # Ensure optional attributes are non-null for UI
+            if "confidence" not in log_item or log_item["confidence"] is None:
+                log_item["confidence"] = 1.0
+            if "snapshot_url" not in log_item:
+                log_item["snapshot_url"] = None
+            if "notes" not in log_item:
+                log_item["notes"] = None
+
+            logs.append(log_item)
+
+        return logs
     except Exception as e:
-        if "PGRST106" in str(e) or "Invalid schema" in str(e):
-            res = _mock_client_instance.table("movement_logs").select("*").order("timestamp", desc=True).limit(limit).execute()
-            return res.data or []
         logger.error(f"Error fetching movement logs: {e}")
         return []
+
+
 
 
 def record_manual_movement(
@@ -813,23 +961,58 @@ def get_active_curfew_alerts(
     """Fetch active OVERDUE_OUT alerts joined with student details."""
     try:
         c = get_hostel_client(client)
-        columns = (
-            "id, student_id, curfew_date, system_start_time, "
-            "curfew_end_time, status, alert_triggered_at, resolved_at, notes, "
-            "student_profiles(name, roll_number, room_number, parent_contact, student_contact, "
-            "last_movement_time)"
-        )
-        res = (
-            c.table("curfew_alerts")
-            .select(columns)
-            .eq("status", "OVERDUE_OUT")
-            .order("alert_triggered_at", desc=True)
-            .execute()
-        )
-        return res.data or []
+        try:
+            res = (
+                c.table("curfew_alerts")
+                .select("*")
+                .eq("status", "OVERDUE_OUT")
+                .order("alert_triggered_at", desc=True)
+                .execute()
+            )
+        except Exception as query_err:
+            if "PGRST106" in str(query_err) or "Invalid schema" in str(query_err) or "relation" in str(query_err).lower():
+                c = get_mock_client()
+                res = (
+                    c.table("curfew_alerts")
+                    .select("*")
+                    .eq("status", "OVERDUE_OUT")
+                    .order("alert_triggered_at", desc=True)
+                    .execute()
+                )
+            else:
+                logger.error(f"Error executing curfew_alerts query: {query_err}")
+                return []
+
+        alerts = res.data or []
+        if not alerts:
+            return []
+
+        students = fetch_all_hostel_students(client=c)
+        student_map = {str(s.get("id", "")): s for s in students}
+
+        formatted_alerts = []
+        for a in alerts:
+            alert_item = copy.deepcopy(a)
+            sid = str(alert_item.get("student_id", ""))
+            sp = alert_item.get("student_profiles")
+            if not sp or not isinstance(sp, dict):
+                student = student_map.get(sid, {})
+                alert_item["student_profiles"] = {
+                    "name": student.get("name", "Unknown Student"),
+                    "roll_number": student.get("roll_number", "N/A"),
+                    "room_number": student.get("room_number", "N/A"),
+                    "parent_contact": student.get("parent_contact", ""),
+                    "student_contact": student.get("student_contact", ""),
+                    "last_movement_time": student.get("last_movement_time")
+                }
+            formatted_alerts.append(alert_item)
+
+        return formatted_alerts
     except Exception as e:
         logger.error(f"Error fetching active curfew alerts: {e}")
         return []
+
+
 
 
 def fetch_overdue_curfew_students(

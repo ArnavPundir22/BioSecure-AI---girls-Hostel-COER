@@ -360,7 +360,98 @@
             </div>
         </section>
 
+        <!-- Edit Student Profile Modal -->
+        <div id="editStudentModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 sm:p-6 transition-all duration-300">
+            <div class="relative w-full max-w-xl bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden p-6 space-y-6">
+                
+                <!-- Modal Header -->
+                <div class="flex items-center justify-between border-b border-slate-200 pb-4">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center border border-indigo-200">
+                            <i data-lucide="edit-3" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-bold text-slate-900">Edit Student Profile</h3>
+                            <p class="text-xs text-slate-500">Update information for <span id="editModalStudentName" class="font-bold text-indigo-600">Student</span></p>
+                        </div>
+                    </div>
+                    <button type="button" onclick="closeEditModal()" class="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Alert Notification Box -->
+                <div id="editMessageBox" class="hidden p-3.5 rounded-xl text-xs font-semibold text-center border shadow-sm"></div>
+
+                <!-- Edit Student Form -->
+                <form id="editStudentForm" enctype="multipart/form-data" class="space-y-4">
+                    <input type="hidden" id="editStudentId" name="student_id">
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Student Full Name *</label>
+                        <input type="text" id="editName" name="name" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Roll / Student ID *</label>
+                            <input type="text" id="editRollNumber" name="roll_number" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Room Number *</label>
+                            <input type="text" id="editRoomNumber" name="room_number" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Hostel Block</label>
+                            <input type="text" id="editHostelBlock" name="hostel_block" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Current Status</label>
+                            <select id="editCurrentStatus" name="current_status" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                                <option value="IN">IN (Present in Hostel)</option>
+                                <option value="OUT">OUT (Outside Hostel)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Parent Phone *</label>
+                            <input type="tel" id="editParentContact" name="parent_contact" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Student Contact Phone</label>
+                            <input type="tel" id="editStudentContact" name="student_contact" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                        </div>
+                    </div>
+
+                    <!-- Optional Face Photo Update -->
+                    <div class="p-3.5 bg-slate-50 rounded-xl border border-slate-200 space-y-2">
+                        <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider">Update Face Photo (Optional)</label>
+                        <div class="flex items-center gap-3">
+                            <input type="file" id="editFacePhotoInput" name="face_photo" accept="image/*" class="text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+                        </div>
+                        <p class="text-[11px] text-slate-500">Uploading a new photo extracts a new 512D ArcFace biometric embedding.</p>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-200">
+                        <button type="button" onclick="closeEditModal()" class="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition shadow-xs">
+                            Cancel
+                        </button>
+                        <button type="submit" id="editSubmitBtn" class="px-6 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition flex items-center gap-2 shadow-md shadow-indigo-600/20">
+                            <i data-lucide="save" class="w-4 h-4"></i> Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </main>
+
 
     <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
     <script src="{{ url_for('static', filename='js/guided-camera.js') }}"></script>
@@ -607,6 +698,9 @@
                         </div>
 
                         <div class="flex items-center gap-2 pt-3 border-t border-slate-100">
+                            <button onclick="openEditModal('${s.id}')" class="py-1.5 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold text-xs flex items-center justify-center gap-1 transition shadow-2xs" title="Edit Student Profile">
+                                <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Edit
+                            </button>
                             <button onclick="quickManualEntry('${s.id}', 'IN', '${s.name.replace(/'/g, "\\'")}')" class="flex-1 py-1.5 px-3 rounded-lg ${!isOut ? 'bg-emerald-50 text-emerald-700 border-emerald-200 opacity-60' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'} border font-bold text-xs flex items-center justify-center gap-1 transition">
                                 <i data-lucide="log-in" class="w-3.5 h-3.5"></i> Mark IN
                             </button>
@@ -620,9 +714,85 @@
             lucide.createIcons();
         }
 
+        function openEditModal(studentId) {
+            const student = allStudents.find(s => String(s.id) === String(studentId));
+            if (!student) return;
+
+            document.getElementById('editStudentId').value = student.id;
+            document.getElementById('editModalStudentName').textContent = student.name;
+            document.getElementById('editName').value = student.name || '';
+            document.getElementById('editRollNumber').value = student.roll_number || '';
+            document.getElementById('editRoomNumber').value = student.room_number || '';
+            document.getElementById('editHostelBlock').value = student.hostel_block || 'Block-A';
+            document.getElementById('editCurrentStatus').value = student.current_status || 'IN';
+            document.getElementById('editParentContact').value = student.parent_contact || '';
+            document.getElementById('editStudentContact').value = student.student_contact || '';
+            document.getElementById('editFacePhotoInput').value = '';
+
+            const msgBox = document.getElementById('editMessageBox');
+            msgBox.classList.add('hidden');
+            msgBox.textContent = '';
+
+            const modal = document.getElementById('editStudentModal');
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeEditModal() {
+            const modal = document.getElementById('editStudentModal');
+            modal.classList.add('hidden');
+        }
+
+        document.getElementById('editStudentForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const studentId = document.getElementById('editStudentId').value;
+            const form = e.target;
+            const submitBtn = document.getElementById('editSubmitBtn');
+            const msgBox = document.getElementById('editMessageBox');
+
+            const formData = new FormData(form);
+
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Saving Changes...';
+            lucide.createIcons();
+
+            try {
+                const res = await fetch(`/hostel/api/update_student/${studentId}`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    msgBox.textContent = data.message || 'Student profile updated successfully!';
+                    msgBox.className = 'p-3.5 mb-2 rounded-xl font-medium text-center shadow-sm text-xs bg-emerald-100 text-emerald-800 border border-emerald-200';
+                    msgBox.classList.remove('hidden');
+
+                    setTimeout(() => {
+                        closeEditModal();
+                        loadStudents();
+                    }, 800);
+                } else {
+                    msgBox.textContent = data.error || 'Failed to update student profile.';
+                    msgBox.className = 'p-3.5 mb-2 rounded-xl font-medium text-center shadow-sm text-xs bg-rose-100 text-rose-800 border border-rose-200';
+                    msgBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error('Error saving student edits:', err);
+                msgBox.textContent = 'Network error while saving changes.';
+                msgBox.className = 'p-3.5 mb-2 rounded-xl font-medium text-center shadow-sm text-xs bg-rose-100 text-rose-800 border border-rose-200';
+                msgBox.classList.remove('hidden');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i data-lucide="save" class="w-4 h-4"></i> Save Changes';
+                lucide.createIcons();
+            }
+        });
+
         async function quickManualEntry(studentId, direction, studentName) {
             const notes = prompt(`Record Manual ${direction} Entry for ${studentName}.\n\nEnter remarks/notes (optional):`, `Manual ${direction} entry by warden`);
             if (notes === null) return; // cancelled
+
 
             try {
                 const res = await fetch('/hostel/api/manual_entry', {
