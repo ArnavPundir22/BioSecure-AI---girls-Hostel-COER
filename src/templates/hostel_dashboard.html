@@ -108,68 +108,6 @@
     <!-- Main Container -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 pb-24 md:pb-8">
 
-        <!-- Metrics Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <!-- Total Students -->
-            <div class="glass-panel p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
-                <div class="flex items-center justify-between text-slate-500 mb-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider">Hostel Students</span>
-                    <i data-lucide="users" class="w-5 h-5 text-indigo-600"></i>
-                </div>
-                <div id="statTotal" class="text-3xl font-bold text-slate-900">--</div>
-                <div class="text-xs text-slate-500 mt-1">Enrolled in girls_hostel schema</div>
-            </div>
-
-            <!-- Total IN -->
-            <div class="glass-panel p-6 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 shadow-sm">
-                <div class="flex items-center justify-between text-emerald-700 mb-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider">Inside Hostel (IN)</span>
-                    <i data-lucide="building" class="w-5 h-5 text-emerald-600"></i>
-                </div>
-                <div id="statIn" class="text-3xl font-bold text-emerald-700">--</div>
-                <div class="text-xs text-emerald-600 mt-1 font-medium">Safe inside premises</div>
-            </div>
-
-            <!-- Total OUT -->
-            <div class="glass-panel p-6 rounded-2xl bg-amber-50/70 border border-amber-200/80 shadow-sm">
-                <div class="flex items-center justify-between text-amber-700 mb-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider">Currently Outside (OUT)</span>
-                    <i data-lucide="log-out" class="w-5 h-5 text-amber-600"></i>
-                </div>
-                <div id="statOut" class="text-3xl font-bold text-amber-700">--</div>
-                <div class="text-xs text-amber-600 mt-1 font-medium">Exited via Exit Gate</div>
-            </div>
-
-            <!-- Curfew Overdue Alert -->
-            <div class="glass-panel p-6 rounded-2xl bg-rose-50/80 border border-rose-200 shadow-sm">
-                <div class="flex items-center justify-between text-rose-700 mb-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider">Curfew Overdue (> 7:30 PM)</span>
-                    <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-600 animate-pulse"></i>
-                </div>
-                <div id="statOverdue" class="text-3xl font-bold text-rose-700">0</div>
-                <div class="text-xs text-rose-600 mt-1 font-medium">Requires warden attention</div>
-            </div>
-        </div>
-
-        <!-- Overdue Curfew Alert Section -->
-        <section id="overdueSection" class="glass-panel p-6 rounded-2xl border border-rose-300 bg-rose-50/90 shadow-md hidden">
-            <div class="flex items-center justify-between border-b border-rose-200 pb-4 mb-4">
-                <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-rose-100 rounded-xl text-rose-600 border border-rose-200">
-                        <i data-lucide="bell-ring" class="w-6 h-6 animate-bounce"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-rose-800">🚨 CURFEW BREACH ALERTS — STUDENTS OVERDUE OUTSIDE</h2>
-                        <p class="text-xs text-rose-700">These students left before 7:30 PM and have not returned. Urgent action required.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div id="overdueContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Overdue cards injected dynamically -->
-            </div>
-        </section>
-
         <!-- Single Webcam / Camera Feed Mode Toggler Toolbar -->
         <section class="glass-panel p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-lg border border-indigo-500/30 mb-6">
             <div class="flex flex-col md:flex-row items-center justify-between gap-4">
@@ -269,6 +207,69 @@
 
         <!-- Hidden video element for camera capture -->
         <video id="dashCamVideo" autoplay playsinline muted class="hidden"></video>
+
+        
+        <!-- Metrics Cards Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <!-- Total Students -->
+            <div class="glass-panel p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                <div class="flex items-center justify-between text-slate-500 mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider">Hostel Students</span>
+                    <i data-lucide="users" class="w-5 h-5 text-indigo-600"></i>
+                </div>
+                <div id="statTotal" class="text-3xl font-bold text-slate-900">--</div>
+                <div class="text-xs text-slate-500 mt-1">Enrolled in girls_hostel schema</div>
+            </div>
+
+            <!-- Total IN -->
+            <div class="glass-panel p-6 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 shadow-sm">
+                <div class="flex items-center justify-between text-emerald-700 mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider">Inside Hostel (IN)</span>
+                    <i data-lucide="building" class="w-5 h-5 text-emerald-600"></i>
+                </div>
+                <div id="statIn" class="text-3xl font-bold text-emerald-700">--</div>
+                <div class="text-xs text-emerald-600 mt-1 font-medium">Safe inside premises</div>
+            </div>
+
+            <!-- Total OUT -->
+            <div class="glass-panel p-6 rounded-2xl bg-amber-50/70 border border-amber-200/80 shadow-sm">
+                <div class="flex items-center justify-between text-amber-700 mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider">Currently Outside (OUT)</span>
+                    <i data-lucide="log-out" class="w-5 h-5 text-amber-600"></i>
+                </div>
+                <div id="statOut" class="text-3xl font-bold text-amber-700">--</div>
+                <div class="text-xs text-amber-600 mt-1 font-medium">Exited via Exit Gate</div>
+            </div>
+
+            <!-- Curfew Overdue Alert -->
+            <div class="glass-panel p-6 rounded-2xl bg-rose-50/80 border border-rose-200 shadow-sm">
+                <div class="flex items-center justify-between text-rose-700 mb-2">
+                    <span class="text-xs font-semibold uppercase tracking-wider">Curfew Overdue (> 7:30 PM)</span>
+                    <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-600 animate-pulse"></i>
+                </div>
+                <div id="statOverdue" class="text-3xl font-bold text-rose-700">0</div>
+                <div class="text-xs text-rose-600 mt-1 font-medium">Requires warden attention</div>
+            </div>
+        </div>
+
+        <!-- Overdue Curfew Alert Section -->
+        <section id="overdueSection" class="glass-panel p-6 rounded-2xl border border-rose-300 bg-rose-50/90 shadow-md hidden">
+            <div class="flex items-center justify-between border-b border-rose-200 pb-4 mb-4">
+                <div class="flex items-center space-x-3">
+                    <div class="p-2 bg-rose-100 rounded-xl text-rose-600 border border-rose-200">
+                        <i data-lucide="bell-ring" class="w-6 h-6 animate-bounce"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-rose-800">🚨 CURFEW BREACH ALERTS — STUDENTS OVERDUE OUTSIDE</h2>
+                        <p class="text-xs text-rose-700">These students left before 7:30 PM and have not returned. Urgent action required.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="overdueContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Overdue cards injected dynamically -->
+            </div>
+        </section>
 
         <!-- Movement Logs Table -->
         <section class="glass-panel p-6 rounded-2xl space-y-4 bg-white border border-slate-200 shadow-sm">
