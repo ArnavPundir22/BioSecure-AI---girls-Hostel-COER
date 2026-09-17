@@ -7,75 +7,71 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        body {
-            background-color: #f8fafc;
-            color: #0f172a;
-        }
-        .glass-panel {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(16px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
-        }
-    </style>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased">
+<body class="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased pb-20 md:pb-12">
 
-    <!-- Top Navigation Header -->
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
-        <div class="flex items-center space-x-3">
-            <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-200 shadow-sm">
-                <i data-lucide="shield-check" class="w-6 h-6"></i>
-            </div>
-            <div>
-                <h1 class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-                    BioSecure AI <span class="text-xs px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 font-semibold">GIRLS HOSTEL SECURITY</span>
-                </h1>
-                <p class="text-xs text-slate-500">Isolated Schema Scope: <code class="text-amber-600 font-mono font-semibold">girls_hostel</code> | Curfew Window: <span class="text-emerald-700 font-semibold">17:00 - 19:30</span></p>
-            </div>
-        </div>
-
-        <!-- Navigation Tabs (Desktop) -->
-        <nav class="hidden md:flex items-center space-x-1 bg-slate-100 p-1.5 rounded-xl border border-slate-200 text-xs">
-            <a href="/hostel/" class="px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold shadow-sm flex items-center gap-1.5">
-                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Live Monitor
-            </a>
-            <a href="/hostel/students" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
-                <i data-lucide="users" class="w-4 h-4"></i> Student Directory
-            </a>
-            <a href="/hostel/logs" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
-                <i data-lucide="list" class="w-4 h-4"></i> Movement Logs
-            </a>
-            <a href="/hostel/curfew" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
-                <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
-            </a>
-        </nav>
-
-        <div class="flex items-center space-x-4">
-            <button onclick="openManualEntryModal()" class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-md flex items-center gap-1.5 transition">
-                <i data-lucide="user-check" class="w-4 h-4"></i> Manual Entry
-            </button>
-
-            <div class="text-right hidden sm:block">
-                <div class="text-xs text-slate-500 font-medium">Current Server Time</div>
-                <div id="liveClock" class="font-mono text-sm text-indigo-700 font-bold">10:25:00 AM</div>
+    <!-- Top Window Bar & Navigation Header (Light Theme) -->
+    <header class="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 px-4 sm:px-6 py-3.5 shadow-sm">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            
+            <!-- Window Control Dots & Branding -->
+            <div class="flex items-center space-x-3">
+                <div class="hidden sm:flex items-center space-x-1.5 mr-2">
+                    <span class="w-3 h-3 rounded-full bg-rose-500 inline-block shadow-sm"></span>
+                    <span class="w-3 h-3 rounded-full bg-amber-500 inline-block shadow-sm"></span>
+                    <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block shadow-sm"></span>
+                </div>
+                <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-200 shadow-sm">
+                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                        BioSecure AI <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 font-semibold uppercase tracking-wider">GIRLS HOSTEL</span>
+                    </h1>
+                </div>
             </div>
 
-            <!-- Mobile Menu Toggle Button (Mobile Only) -->
-            <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 transition">
-                <i data-lucide="menu" class="w-6 h-6"></i>
-            </button>
+            <!-- Navigation Tabs (Desktop Light Theme) -->
+            <nav class="hidden md:flex items-center space-x-1 bg-slate-100 p-1.5 rounded-xl border border-slate-200 text-xs font-medium">
+                <a href="/hostel/" class="px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold shadow-sm flex items-center gap-1.5">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Live Monitor
+                </a>
+                <a href="/hostel/students" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/70 transition flex items-center gap-1.5 font-medium">
+                    <i data-lucide="users" class="w-4 h-4"></i> Student Directory
+                </a>
+                <a href="/hostel/logs" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/70 transition flex items-center gap-1.5 font-medium">
+                    <i data-lucide="list" class="w-4 h-4"></i> Movement Logs
+                </a>
+                <a href="/hostel/curfew" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/70 transition flex items-center gap-1.5 font-medium">
+                    <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
+                </a>
+            </nav>
+
+            <!-- Actions & Live Clock -->
+            <div class="flex items-center space-x-4">
+                <button onclick="openManualEntryModal()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center gap-1.5 transition">
+                    <i data-lucide="user-check" class="w-4 h-4"></i> Manual Entry
+                </button>
+
+                <div class="text-right hidden sm:block">
+                    <div class="text-[10px] text-slate-400 font-semibold uppercase tracking-wider">Server Time</div>
+                    <div id="liveClock" class="font-mono text-xs text-indigo-700 font-bold">10:25:00 AM</div>
+                </div>
+
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-700">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
+            </div>
         </div>
     </header>
 
     <!-- Mobile Dropdown Navigation Menu -->
-    <div id="mobileMenu" class="hidden md:hidden bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3 space-y-2 text-sm shadow-md">
+    <div id="mobileMenu" class="hidden md:hidden bg-white border-b border-slate-200 px-6 py-3 space-y-2 text-sm text-slate-800 shadow-md">
         <a href="/hostel/" class="flex items-center gap-2 px-3 py-2 rounded-lg bg-indigo-50 text-indigo-700 font-semibold">
             <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Live Monitor
         </a>
         <a href="/hostel/students" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
-            <i data-lucide="users" class="w-4 h-4"></i> Student Directory & Registration
+            <i data-lucide="users" class="w-4 h-4"></i> Student Directory
         </a>
         <a href="/hostel/logs" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
             <i data-lucide="list" class="w-4 h-4"></i> Movement Logs
@@ -85,234 +81,327 @@
         </a>
     </div>
 
-    <!-- Mobile Fixed Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 left-0 w-full z-50 flex md:hidden justify-around items-center bg-white/95 backdrop-blur-md border-t border-slate-200 shadow-xl py-2 px-1 text-xs">
-        <a href="/hostel/" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-indigo-600 font-bold">
-            <i data-lucide="layout-dashboard" class="w-5 h-5 mb-0.5"></i>
-            <span class="text-[11px]">Monitor</span>
-        </a>
-        <a href="/hostel/students" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-indigo-600 font-medium">
-            <i data-lucide="users" class="w-5 h-5 mb-0.5"></i>
-            <span class="text-[11px]">Directory</span>
-        </a>
-        <a href="/hostel/logs" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-indigo-600 font-medium">
-            <i data-lucide="list" class="w-5 h-5 mb-0.5"></i>
-            <span class="text-[11px]">Logs</span>
-        </a>
-        <a href="/hostel/curfew" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-indigo-600 font-medium">
-            <i data-lucide="clock" class="w-5 h-5 mb-0.5"></i>
-            <span class="text-[11px]">Curfew</span>
-        </a>
-    </nav>
+    <!-- Main Workspace Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 space-y-8">
 
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 pb-24 md:pb-8">
-
-        <!-- Metrics Cards Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <!-- Total Students -->
-            <div class="glass-panel p-6 rounded-2xl bg-white border border-slate-200 shadow-sm">
-                <div class="flex items-center justify-between text-slate-500 mb-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider">Hostel Students</span>
-                    <i data-lucide="users" class="w-5 h-5 text-indigo-600"></i>
+        <!-- ====================================================================
+             TOP CONTAINER: EXECUTIVE CONTRAST HERO CARD WITH BOTTOM NOTCH (Reference Photo Top)
+             ==================================================================== -->
+        <section class="hero-dark-card p-6 sm:p-8">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-white/10">
+                <!-- System Scope & Curfew Pill -->
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs text-slate-200 backdrop-blur-md">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Schema: <code class="text-amber-300 font-mono font-semibold">girls_hostel</code></span>
+                    <span class="text-slate-400">|</span>
+                    <span>Curfew Window: <span class="text-emerald-300 font-semibold">17:00 - 19:30</span></span>
                 </div>
-                <div id="statTotal" class="text-3xl font-bold text-slate-900">--</div>
-                <div class="text-xs text-slate-500 mt-1">Enrolled in girls_hostel schema</div>
+
+                <!-- Action Badge / Status Pill -->
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-200 border border-indigo-400/30 text-xs font-mono font-bold">
+                    <i data-lucide="activity" class="w-3.5 h-3.5 text-indigo-300"></i> LIVE FACIAL AI MONITOR ACTIVE
+                </div>
             </div>
 
-            <!-- Total IN -->
-            <div class="glass-panel p-6 rounded-2xl bg-emerald-50/70 border border-emerald-200/80 shadow-sm">
-                <div class="flex items-center justify-between text-emerald-700 mb-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider">Inside Hostel (IN)</span>
-                    <i data-lucide="building" class="w-5 h-5 text-emerald-600"></i>
+            <!-- Hero Banner Content & Stacked Right Cards -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-6 items-center">
+                <!-- Left Banner Title & System Description -->
+                <div class="lg:col-span-8 space-y-3">
+                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight font-geist">
+                        AI Facial Recognition & Curfew Security Control
+                    </h2>
+                    <p class="text-slate-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
+                        Automated computer vision surveillance for hostel entry/exit gates. Tracks student Movement Logs in real-time, monitors active status (<code class="text-amber-300">IN</code> / <code class="text-amber-300">OUT</code>), and flags instant Warden Breach Alerts for curfew violations.
+                    </p>
                 </div>
-                <div id="statIn" class="text-3xl font-bold text-emerald-700">--</div>
-                <div class="text-xs text-emerald-600 mt-1 font-medium">Safe inside premises</div>
+
+                <!-- Right Stacked Action Cards -->
+                <div class="lg:col-span-4 space-y-3">
+                    <div class="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-xl bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">
+                                <i data-lucide="shield" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-white">Manual Gate Override</h4>
+                                <p class="text-[11px] text-slate-300">Record off-line or emergency pass</p>
+                            </div>
+                        </div>
+                        <button onclick="openManualEntryModal()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow transition">
+                            Check
+                        </button>
+                    </div>
+
+                    <div class="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-xl bg-emerald-500/30 text-emerald-200 border border-emerald-400/30">
+                                <i data-lucide="video" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-white">Host System Camera</h4>
+                                <p class="text-[11px] text-slate-300">Shared single webcam feed</p>
+                            </div>
+                        </div>
+                        <span id="activeModeBadge" class="text-[10px] px-2.5 py-0.5 rounded-md bg-emerald-500/30 text-emerald-200 font-mono font-bold border border-emerald-400/30">
+                            MODE: AUTO
+                        </span>
+                    </div>
+                </div>
             </div>
 
-            <!-- Total OUT -->
-            <div class="glass-panel p-6 rounded-2xl bg-amber-50/70 border border-amber-200/80 shadow-sm">
-                <div class="flex items-center justify-between text-amber-700 mb-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider">Currently Outside (OUT)</span>
-                    <i data-lucide="log-out" class="w-5 h-5 text-amber-600"></i>
+            <!-- Bottom Cutout Notch for Camera Toggle Control -->
+            <div class="notch-wrapper">
+                <div class="header-notch">
+                    <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                        <i data-lucide="sliders" class="w-4 h-4 text-indigo-400"></i> Mode Switcher:
+                    </span>
+                    <div class="flex items-center gap-1.5">
+                        <button onclick="setCameraMode('AUTO')" id="btnModeAuto" class="text-[11px] px-3 py-1 rounded-full bg-indigo-600 font-bold text-white shadow transition">
+                            Auto
+                        </button>
+                        <button onclick="setCameraMode('IN')" id="btnModeIn" class="text-[11px] px-3 py-1 rounded-full bg-slate-800 text-slate-300 font-semibold transition">
+                            Entry (IN)
+                        </button>
+                        <button onclick="setCameraMode('OUT')" id="btnModeOut" class="text-[11px] px-3 py-1 rounded-full bg-slate-800 text-slate-300 font-semibold transition">
+                            Exit (OUT)
+                        </button>
+                        <button onclick="setCameraMode('DUAL')" id="btnModeDual" class="text-[11px] px-3 py-1 rounded-full bg-slate-800 text-slate-300 font-semibold transition">
+                            Dual
+                        </button>
+                    </div>
                 </div>
-                <div id="statOut" class="text-3xl font-bold text-amber-700">--</div>
-                <div class="text-xs text-amber-600 mt-1 font-medium">Exited via Exit Gate</div>
             </div>
+        </section>
 
-            <!-- Curfew Overdue Alert -->
-            <div class="glass-panel p-6 rounded-2xl bg-rose-50/80 border border-rose-200 shadow-sm">
-                <div class="flex items-center justify-between text-rose-700 mb-2">
-                    <span class="text-xs font-semibold uppercase tracking-wider">Curfew Overdue (> 7:30 PM)</span>
-                    <i data-lucide="alert-triangle" class="w-5 h-5 text-rose-600 animate-pulse"></i>
-                </div>
-                <div id="statOverdue" class="text-3xl font-bold text-rose-700">0</div>
-                <div class="text-xs text-rose-600 mt-1 font-medium">Requires warden attention</div>
-            </div>
-        </div>
-
-        <!-- Overdue Curfew Alert Section -->
-        <section id="overdueSection" class="glass-panel p-6 rounded-2xl border border-rose-300 bg-rose-50/90 shadow-md hidden">
+        <!-- ====================================================================
+             CURFEW BREACH EMERGENCY ALERTS (Light Theme Alert Panel)
+             ==================================================================== -->
+        <section id="overdueSection" class="p-6 rounded-2xl border border-rose-300 bg-rose-50/90 shadow-md hidden">
             <div class="flex items-center justify-between border-b border-rose-200 pb-4 mb-4">
                 <div class="flex items-center space-x-3">
-                    <div class="p-2 bg-rose-100 rounded-xl text-rose-600 border border-rose-200">
+                    <div class="p-2 bg-rose-100 rounded-xl text-rose-700 border border-rose-200">
                         <i data-lucide="bell-ring" class="w-6 h-6 animate-bounce"></i>
                     </div>
                     <div>
-                        <h2 class="text-lg font-bold text-rose-800">🚨 CURFEW BREACH ALERTS — STUDENTS OVERDUE OUTSIDE</h2>
-                        <p class="text-xs text-rose-700">These students left before 7:30 PM and have not returned. Urgent action required.</p>
+                        <h2 class="text-base font-bold text-rose-900">🚨 CURFEW BREACH ALERTS — OVERDUE STUDENTS</h2>
+                        <p class="text-xs text-rose-700">Students who left before curfew cut-off and have not returned.</p>
                     </div>
                 </div>
             </div>
-
             <div id="overdueContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <!-- Overdue cards injected dynamically -->
+                <!-- Dynamic overdue cards -->
             </div>
         </section>
 
-        <!-- Single Webcam / Camera Feed Mode Toggler Toolbar -->
-        <section class="glass-panel p-5 rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white shadow-lg border border-indigo-500/30 mb-6">
-            <div class="flex flex-col md:flex-row items-center justify-between gap-4">
-                <div class="flex items-center space-x-3">
-                    <div class="p-2.5 bg-indigo-500/20 rounded-xl border border-indigo-400/30 text-indigo-300">
-                        <i data-lucide="camera" class="w-6 h-6"></i>
+        <!-- ====================================================================
+             MIDDLE SECTION: LIGHT SECTION TITLE PILL + TEXT DESCRIPTION + WEBCAM MEDIA
+             ==================================================================== -->
+        <section class="space-y-4">
+            <!-- Light Section Header Title Pill -->
+            <div>
+                <div class="section-title-pill">
+                    <div class="p-1 rounded-lg bg-indigo-50 text-indigo-600">
+                        <i data-lucide="video" class="w-4 h-4"></i>
                     </div>
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <h3 class="font-bold text-base text-white">Local Testing Camera Feed Control</h3>
-                            <span id="activeModeBadge" class="text-xs px-2.5 py-0.5 rounded-full bg-indigo-500/30 text-indigo-200 border border-indigo-400/40 font-mono font-bold">
-                                MODE: AUTO-TOGGLE
-                            </span>
+                    <span class="text-slate-900">Live AI Surveillance & Host Stream Preview</span>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-stretch">
+                <!-- Left Column: Description Paragraph & Primary CTA Pill -->
+                <div class="lg:col-span-5 light-card-panel p-6 sm:p-7 flex flex-col justify-between space-y-6">
+                    <div class="space-y-4">
+                        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-100 text-xs font-semibold">
+                            <i data-lucide="cpu" class="w-3.5 h-3.5"></i> Face Recognition Engine
                         </div>
-                        <p id="activeModeDesc" class="text-xs text-slate-300 mt-0.5">
+                        <h3 class="text-xl font-bold text-slate-900 font-geist">Automated Gate Verification</h3>
+                        <p class="text-slate-600 text-xs sm:text-sm leading-relaxed">
+                            The computer vision stream scans student faces at the hostel entry/exit gates. Recognised students have their status instantly updated in the database (<code class="text-amber-700 font-mono font-semibold">IN</code> vs <code class="text-amber-700 font-mono font-semibold">OUT</code>). Unrecognised faces trigger alerts for manual warden verification.
+                        </p>
+                        <p id="activeModeDesc" class="text-xs text-slate-500 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
                             Shared single webcam active — automatically toggles IN & OUT based on student hostel status.
                         </p>
                     </div>
-                </div>
-                
-                <!-- Quick Mode Switcher Buttons -->
-                <div class="flex items-center flex-wrap gap-2">
-                    <button onclick="setCameraMode('AUTO')" id="btnModeAuto" class="text-xs px-3.5 py-2 rounded-xl bg-indigo-600 font-bold text-white shadow-md transition flex items-center gap-1.5 border border-indigo-400/50 ring-2 ring-indigo-400/30">
-                        <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Auto-Toggle (In/Out)
-                    </button>
-                    <button onclick="setCameraMode('IN')" id="btnModeIn" class="text-xs px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-semibold transition flex items-center gap-1.5 border border-slate-700">
-                        <i data-lucide="log-in" class="w-3.5 h-3.5 text-emerald-400"></i> Entry Only (IN)
-                    </button>
-                    <button onclick="setCameraMode('OUT')" id="btnModeOut" class="text-xs px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-semibold transition flex items-center gap-1.5 border border-slate-700">
-                        <i data-lucide="log-out" class="w-3.5 h-3.5 text-amber-400"></i> Exit Only (OUT)
-                    </button>
-                    <button onclick="setCameraMode('DUAL')" id="btnModeDual" class="text-xs px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-semibold transition flex items-center gap-1.5 border border-slate-700">
-                        <i data-lucide="video" class="w-3.5 h-3.5 text-purple-400"></i> Dual RTSP Feeds
-                    </button>
-                </div>
-            </div>
-        </section>
 
-        <!-- Gate Camera Live Feeds from Host System Computer -->
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <!-- Camera 01: ENTRY GATE -->
-            <div class="glass-panel p-6 rounded-2xl space-y-4 bg-white border border-slate-200 shadow-sm">
-                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-                    <div class="flex items-center space-x-2">
-                        <span id="cam1Dot" class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <h2 class="font-bold text-slate-900 flex items-center gap-2">
-                            <i data-lucide="video" class="w-5 h-5 text-emerald-600"></i> CAM 01: HOST SYSTEM CAMERA (ENTRY)
-                        </h2>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-mono bg-emerald-100 text-emerald-800 px-2.5 py-1 rounded-full border border-emerald-200 font-bold">LOGS: IN</span>
+                    <!-- CTA Buttons -->
+                    <div class="flex items-center flex-wrap gap-3 pt-4 border-t border-slate-100">
+                        <button onclick="openManualEntryModal()" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-full shadow-md flex items-center gap-2 transition">
+                            <i data-lucide="user-check" class="w-4 h-4"></i> Manual Entry Check
+                        </button>
+                        <a href="/hostel/students" class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold text-xs rounded-full border border-slate-200 flex items-center gap-2 transition">
+                            <i data-lucide="users" class="w-4 h-4"></i> View Directory
+                        </a>
                     </div>
                 </div>
-                <div class="relative aspect-video bg-slate-900 rounded-xl overflow-hidden border border-slate-800 shadow-inner flex items-center justify-center">
-                    <img id="cam1Feed" src="/hostel/video_feed?role=IN" class="w-full h-full object-cover" alt="Live Host Camera Feed (Entry Gate)" onerror="this.onerror=null; this.classList.add('hidden'); document.getElementById('cam1Placeholder').classList.remove('hidden');" />
-                    <!-- Fallback placeholder if stream interrupted -->
-                    <div id="cam1Placeholder" class="hidden absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-900">
-                        <div class="p-4 rounded-full bg-emerald-500/10 border border-emerald-500/30">
-                            <i data-lucide="shield-check" class="w-10 h-10 text-emerald-400"></i>
-                        </div>
-                        <div class="text-center px-4">
-                            <p class="text-emerald-400 font-bold text-sm">Host Computer Camera Feed</p>
-                            <p class="text-slate-400 text-xs mt-1">Connecting to host camera video stream...</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
 
-            <!-- Camera 02: EXIT GATE -->
-            <div class="glass-panel p-6 rounded-2xl space-y-4 bg-white border border-slate-200 shadow-sm">
-                <div class="flex items-center justify-between border-b border-slate-200 pb-3">
-                    <div class="flex items-center space-x-2">
-                        <span id="cam2Dot" class="w-3 h-3 rounded-full bg-amber-500 animate-pulse"></span>
-                        <h2 class="font-bold text-slate-900 flex items-center gap-2">
-                            <i data-lucide="video" class="w-5 h-5 text-amber-600"></i> CAM 02: HOST SYSTEM CAMERA (EXIT)
-                        </h2>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="text-xs font-mono bg-amber-100 text-amber-800 px-2.5 py-1 rounded-full border border-amber-200 font-bold">LOGS: OUT</span>
-                    </div>
-                </div>
-                <div class="relative aspect-video bg-slate-900 rounded-xl overflow-hidden border border-slate-800 shadow-inner flex items-center justify-center">
-                    <img id="cam2Feed" src="/hostel/video_feed?role=OUT" class="w-full h-full object-cover" alt="Live Host Camera Feed (Exit Gate)" onerror="this.onerror=null; this.classList.add('hidden'); document.getElementById('cam2Placeholder').classList.remove('hidden');" />
-                    <!-- Fallback placeholder -->
-                    <div id="cam2Placeholder" class="hidden absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-900">
-                        <div class="p-4 rounded-full bg-amber-500/10 border border-amber-500/30">
-                            <i data-lucide="log-out" class="w-10 h-10 text-amber-400"></i>
+                <!-- Right Column: Large Camera Media Card -->
+                <div class="lg:col-span-7 light-card-panel p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div class="flex items-center space-x-2">
+                            <span id="cam1Dot" class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></span>
+                            <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
+                                <i data-lucide="camera" class="w-4 h-4 text-emerald-600"></i> HOST SYSTEM CAMERA FEED (ENTRY / EXIT GATE)
+                            </h3>
                         </div>
-                        <div class="text-center px-4">
-                            <p class="text-amber-400 font-bold text-sm">Host Computer Camera Feed</p>
-                            <p class="text-slate-400 text-xs mt-1">Connecting to host camera video stream...</p>
+                        <span class="text-[11px] font-mono bg-emerald-50 text-emerald-700 px-2.5 py-0.5 rounded-full border border-emerald-200 font-bold">
+                            STREAM: ONLINE
+                        </span>
+                    </div>
+
+                    <!-- Live Video Frame Container -->
+                    <div class="relative aspect-video bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-inner flex items-center justify-center">
+                        <img id="cam1Feed" src="/hostel/video_feed?role=IN" class="w-full h-full object-cover" alt="Live Host Camera Feed" onerror="this.onerror=null; this.classList.add('hidden'); document.getElementById('cam1Placeholder').classList.remove('hidden');" />
+                        
+                        <!-- Fallback Placeholder -->
+                        <div id="cam1Placeholder" class="hidden absolute inset-0 flex flex-col items-center justify-center gap-3 bg-slate-900">
+                            <div class="p-4 rounded-full bg-indigo-500/10 border border-indigo-500/30">
+                                <i data-lucide="shield-check" class="w-10 h-10 text-indigo-400"></i>
+                            </div>
+                            <div class="text-center px-4">
+                                <p class="text-indigo-400 font-bold text-sm">Host Computer Camera Feed</p>
+                                <p class="text-slate-400 text-xs mt-1">Connecting to live camera video stream...</p>
+                            </div>
+                        </div>
+
+                        <!-- Live Feed AI Overlay Tag -->
+                        <div class="absolute top-3 left-3 bg-slate-900/80 backdrop-blur-md px-3 py-1 rounded-full border border-slate-700 text-[10px] text-emerald-400 font-mono font-bold flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> AI BOUNDING SCAN ACTIVE
                         </div>
                     </div>
                 </div>
             </div>
         </section>
 
-        <!-- Hidden video element for camera capture -->
+        <!-- Hidden video element for webcam fallback -->
         <video id="dashCamVideo" autoplay playsinline muted class="hidden"></video>
 
-        <!-- Movement Logs Table -->
-        <section class="glass-panel p-6 rounded-2xl space-y-4 bg-white border border-slate-200 shadow-sm">
-            <div class="flex items-center justify-between border-b border-slate-200 pb-4">
-                <div>
-                    <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
-                        <i data-lucide="list" class="w-5 h-5 text-indigo-600"></i> Real-Time Student Movement Logs
-                    </h2>
-                    <p class="text-xs text-slate-500">Filtered strictly from <code class="text-amber-600 font-mono font-semibold">girls_hostel.movement_logs</code></p>
+        <!-- ====================================================================
+             BOTTOM SECTION: SECTION TITLE PILL + LOGS TABLE + 2x2 METRICS GRID
+             ==================================================================== -->
+        <section class="space-y-4">
+            <!-- Light Section Header Title Pill -->
+            <div>
+                <div class="section-title-pill">
+                    <div class="p-1 rounded-lg bg-emerald-50 text-emerald-600">
+                        <i data-lucide="activity" class="w-4 h-4"></i>
+                    </div>
+                    <span class="text-slate-900">Real-Time Analytics & Movement Activity</span>
                 </div>
-                <button onclick="loadHostelData()" class="text-xs px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-700 hover:bg-indigo-100 transition border border-indigo-200 font-semibold flex items-center gap-1">
-                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
-                </button>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-slate-700">
-                    <thead class="bg-slate-100 text-xs text-slate-700 uppercase tracking-wider border-b border-slate-200 font-semibold">
-                        <tr>
-                            <th class="px-4 py-3">Student Name</th>
-                            <th class="px-4 py-3">Roll Number</th>
-                            <th class="px-4 py-3">Room</th>
-                            <th class="px-4 py-3">Direction</th>
-                            <th class="px-4 py-3">Camera</th>
-                            <th class="px-4 py-3">Timestamp</th>
-                        </tr>
-                    </thead>
-                    <tbody id="logsTableBody" class="divide-y divide-slate-200">
-                        <tr>
-                            <td colspan="6" class="px-4 py-8 text-center text-slate-500">Loading movement logs...</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                
+                <!-- Left Column: Real-Time Movement Logs Table (Clean Light Card) -->
+                <div class="lg:col-span-7 light-card-panel p-6 space-y-4">
+                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                        <div>
+                            <h3 class="text-base font-bold text-slate-900 flex items-center gap-2">
+                                <i data-lucide="list" class="w-4 h-4 text-indigo-600"></i> Real-Time Student Movement Logs
+                            </h3>
+                            <p class="text-[11px] text-slate-500">Live database query from <code class="text-amber-600 font-mono font-semibold">girls_hostel.movement_logs</code></p>
+                        </div>
+                        <button onclick="loadHostelData()" class="text-xs px-3 py-1.5 rounded-lg bg-slate-100 text-indigo-700 hover:bg-slate-200 transition border border-slate-200 font-semibold flex items-center gap-1">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
+                        </button>
+                    </div>
+
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-700">
+                            <thead class="bg-slate-50 text-[10px] text-slate-600 uppercase tracking-wider border-b border-slate-200 font-semibold">
+                                <tr>
+                                    <th class="px-3 py-2.5">Student Name</th>
+                                    <th class="px-3 py-2.5">Roll No</th>
+                                    <th class="px-3 py-2.5">Room</th>
+                                    <th class="px-3 py-2.5">Dir</th>
+                                    <th class="px-3 py-2.5">Camera</th>
+                                    <th class="px-3 py-2.5">Timestamp</th>
+                                </tr>
+                            </thead>
+                            <tbody id="logsTableBody" class="divide-y divide-slate-100">
+                                <tr>
+                                    <td colspan="6" class="px-4 py-8 text-center text-slate-500">Loading movement logs...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Right Column: 2x2 Grid of Professional Metric Cards -->
+                <div class="lg:col-span-5 grid grid-cols-2 gap-4">
+                    <!-- Total Students Card -->
+                    <div class="light-card-panel p-5 space-y-2 bg-white border border-slate-200">
+                        <div class="flex items-center justify-between text-slate-500">
+                            <span class="text-[10px] font-bold uppercase tracking-wider">Hostel Students</span>
+                            <i data-lucide="users" class="w-4 h-4 text-indigo-600"></i>
+                        </div>
+                        <div id="statTotal" class="text-2xl sm:text-3xl font-extrabold text-slate-900 font-geist">--</div>
+                        <div class="text-[10px] text-slate-500">Enrolled schema count</div>
+                    </div>
+
+                    <!-- Total IN Card -->
+                    <div class="light-card-panel p-5 space-y-2 bg-emerald-50/70 border border-emerald-200">
+                        <div class="flex items-center justify-between text-emerald-700">
+                            <span class="text-[10px] font-bold uppercase tracking-wider">Inside (IN)</span>
+                            <i data-lucide="building" class="w-4 h-4 text-emerald-600"></i>
+                        </div>
+                        <div id="statIn" class="text-2xl sm:text-3xl font-extrabold text-emerald-700 font-geist">--</div>
+                        <div class="text-[10px] text-emerald-600 font-medium">Safe inside premises</div>
+                    </div>
+
+                    <!-- Total OUT Card -->
+                    <div class="light-card-panel p-5 space-y-2 bg-amber-50/70 border border-amber-200">
+                        <div class="flex items-center justify-between text-amber-700">
+                            <span class="text-[10px] font-bold uppercase tracking-wider">Outside (OUT)</span>
+                            <i data-lucide="log-out" class="w-4 h-4 text-amber-600"></i>
+                        </div>
+                        <div id="statOut" class="text-2xl sm:text-3xl font-extrabold text-amber-700 font-geist">--</div>
+                        <div class="text-[10px] text-amber-600 font-medium">Exited via gate</div>
+                    </div>
+
+                    <!-- Curfew Overdue Card -->
+                    <div class="light-card-panel p-5 space-y-2 bg-rose-50/80 border border-rose-200">
+                        <div class="flex items-center justify-between text-rose-700">
+                            <span class="text-[10px] font-bold uppercase tracking-wider">Overdue (> 7:30 PM)</span>
+                            <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600 animate-pulse"></i>
+                        </div>
+                        <div id="statOverdue" class="text-2xl sm:text-3xl font-extrabold text-rose-700 font-geist">0</div>
+                        <div class="text-[10px] text-rose-600 font-medium">Requires attention</div>
+                    </div>
+                </div>
+
             </div>
         </section>
 
     </main>
 
+    <!-- Mobile Fixed Bottom Navigation Bar (Light Theme) -->
+    <nav class="fixed bottom-0 left-0 w-full z-50 flex md:hidden justify-around items-center bg-white/95 backdrop-blur-md border-t border-slate-200 py-2 px-1 text-xs text-slate-800 shadow-lg">
+        <a href="/hostel/" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-indigo-600 font-bold">
+            <i data-lucide="layout-dashboard" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[10px]">Monitor</span>
+        </a>
+        <a href="/hostel/students" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-indigo-600 font-medium">
+            <i data-lucide="users" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[10px]">Directory</span>
+        </a>
+        <a href="/hostel/logs" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-indigo-600 font-medium">
+            <i data-lucide="list" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[10px]">Logs</span>
+        </a>
+        <a href="/hostel/curfew" class="flex flex-col items-center justify-center py-1 px-3 rounded-lg text-slate-600 hover:text-indigo-600 font-medium">
+            <i data-lucide="clock" class="w-5 h-5 mb-0.5"></i>
+            <span class="text-[10px]">Curfew</span>
+        </a>
+    </nav>
+
+    <!-- JavaScript Data Loading & Modal Interactivity -->
     <script>
         lucide.createIcons();
 
-        // Update live clock
+        // Live Clock
         setInterval(() => {
-            document.getElementById('liveClock').innerText = new Date().toLocaleTimeString();
+            const clockEl = document.getElementById('liveClock');
+            if (clockEl) clockEl.innerText = new Date().toLocaleTimeString();
         }, 1000);
 
         async function loadHostelData() {
@@ -343,27 +432,26 @@
                         overdueContainer.innerHTML = overdueData.alerts.map(a => {
                             const sp = a.student_profiles || {};
                             return `
-                                <div class="bg-white border border-rose-300 rounded-xl p-4 space-y-2 shadow-sm">
+                                <div class="bg-white border border-rose-300 rounded-xl p-4 space-y-2 shadow-sm text-slate-900">
                                     <div class="flex items-center justify-between">
-                                        <h3 class="font-bold text-rose-800">${sp.name || 'Unknown Student'}</h3>
-                                        <span class="text-xs bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full border border-rose-200 font-bold">OVERDUE OUT</span>
+                                        <h3 class="font-bold text-rose-800 text-sm">${sp.name || 'Unknown Student'}</h3>
+                                        <span class="text-[10px] bg-rose-100 text-rose-800 px-2 py-0.5 rounded-full border border-rose-200 font-bold">OVERDUE</span>
                                     </div>
-                                    <div class="text-xs text-slate-600 space-y-2">
+                                    <div class="text-xs text-slate-600 space-y-1.5">
                                         <div>Roll: <span class="text-slate-900 font-semibold">${sp.roll_number || 'N/A'}</span> | Room: <span class="text-slate-900 font-semibold">${sp.room_number || 'N/A'}</span></div>
-                                        <div class="bg-rose-50/70 p-2.5 rounded-lg border border-rose-200/80 space-y-1.5">
+                                        <div class="bg-rose-50/70 p-2.5 rounded-lg border border-rose-200 space-y-1">
                                             <div class="flex items-center justify-between">
-                                                <span class="text-[10px] uppercase font-bold text-slate-500">Student Contact:</span>
-                                                ${sp.student_contact ? `<a href="tel:${sp.student_contact}" class="text-xs font-mono font-bold text-indigo-700 underline flex items-center gap-1"><i data-lucide="smartphone" class="w-3 h-3"></i> ${sp.student_contact}</a>` : `<span class="text-xs text-slate-400 italic">Not Provided</span>`}
+                                                <span class="text-[10px] uppercase font-bold text-slate-500">Student:</span>
+                                                ${sp.student_contact ? `<a href="tel:${sp.student_contact}" class="text-xs font-mono font-bold text-indigo-700 underline">${sp.student_contact}</a>` : `<span class="text-xs text-slate-400 italic">Not Provided</span>`}
                                             </div>
                                             <div class="flex items-center justify-between border-t border-rose-200/50 pt-1">
-                                                <span class="text-[10px] uppercase font-bold text-slate-500">Parent Contact:</span>
-                                                <a href="tel:${sp.parent_contact}" class="text-xs font-mono font-bold text-emerald-700 underline flex items-center gap-1"><i data-lucide="phone-call" class="w-3 h-3"></i> ${sp.parent_contact || 'N/A'}</a>
+                                                <span class="text-[10px] uppercase font-bold text-slate-500">Parent:</span>
+                                                <a href="tel:${sp.parent_contact}" class="text-xs font-mono font-bold text-emerald-700 underline">${sp.parent_contact || 'N/A'}</a>
                                             </div>
                                         </div>
-                                        <div>Curfew Window: <span class="text-slate-700 font-medium">17:00 - 19:30</span></div>
                                     </div>
                                     <button onclick="resolveAlert(${a.id})" class="w-full mt-2 text-xs py-1.5 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-semibold transition shadow-sm">
-                                        Mark Resolved / Note Reason
+                                        Resolve / Note Reason
                                     </button>
                                 </div>
                             `;
@@ -385,25 +473,25 @@
                             const isOut = l.direction === 'OUT';
                             const isManual = l.camera_id === 'MANUAL_ENTRY';
                             const camBadge = isManual
-                                ? `<span class="px-2 py-0.5 rounded text-[11px] bg-purple-100 text-purple-700 border border-purple-200 font-bold flex items-center gap-1 w-max"><i data-lucide="user-check" class="w-3 h-3"></i> MANUAL (Warden)</span>`
-                                : `<span class="font-mono text-xs text-slate-600">${l.camera_id}</span>`;
-                            const notesText = l.notes ? `<div class="text-[11px] text-slate-500 italic mt-0.5">${l.notes}</div>` : '';
+                                ? `<span class="px-2 py-0.5 rounded text-[10px] bg-purple-100 text-purple-700 border border-purple-200 font-bold">MANUAL</span>`
+                                : `<span class="font-mono text-[11px] text-slate-600">${l.camera_id}</span>`;
+                            const notesText = l.notes ? `<div class="text-[10px] text-slate-500 italic">${l.notes}</div>` : '';
 
                             return `
                                 <tr class="hover:bg-slate-50 transition">
-                                    <td class="px-4 py-3 font-semibold text-slate-900">
+                                    <td class="px-3 py-2.5 font-semibold text-slate-900">
                                         ${sp.name || 'Unknown Student'}
                                         ${notesText}
                                     </td>
-                                    <td class="px-4 py-3 text-slate-600 font-mono">${sp.roll_number || 'N/A'}</td>
-                                    <td class="px-4 py-3 text-slate-600">${sp.room_number || 'N/A'}</td>
-                                    <td class="px-4 py-3">
-                                        <span class="text-xs px-2.5 py-1 rounded-full font-bold ${isOut ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'}">
+                                    <td class="px-3 py-2.5 text-slate-600 font-mono">${sp.roll_number || 'N/A'}</td>
+                                    <td class="px-3 py-2.5 text-slate-600">${sp.room_number || 'N/A'}</td>
+                                    <td class="px-3 py-2.5">
+                                        <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${isOut ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'}">
                                             ${l.direction}
                                         </span>
                                     </td>
-                                    <td class="px-4 py-3">${camBadge}</td>
-                                    <td class="px-4 py-3 text-xs text-slate-600 font-mono">${new Date(l.timestamp).toLocaleString()}</td>
+                                    <td class="px-3 py-2.5">${camBadge}</td>
+                                    <td class="px-3 py-2.5 text-[11px] text-slate-500 font-mono">${new Date(l.timestamp).toLocaleString()}</td>
                                 </tr>
                             `;
                         }).join('');
@@ -430,7 +518,6 @@
             }
         }
 
-        // Native MJPEG stream handler with connection auto-recovery
         (function initHostCameraStream() {
             function attachAutoReconnect(imgId) {
                 const img = document.getElementById(imgId);
@@ -442,14 +529,11 @@
                 };
             }
             attachAutoReconnect('cam1Feed');
-            attachAutoReconnect('cam2Feed');
         })();
 
         function toggleMobileMenu() {
             const menu = document.getElementById('mobileMenu');
-            if (menu) {
-                menu.classList.toggle('hidden');
-            }
+            if (menu) menu.classList.toggle('hidden');
         }
 
         async function fetchCameraMode() {
@@ -497,16 +581,13 @@
                 const btn = document.getElementById(buttons[m]);
                 if (!btn) return;
                 if (m === mode) {
-                    btn.className = "text-xs px-3.5 py-2 rounded-xl bg-indigo-600 font-bold text-white shadow-md transition flex items-center gap-1.5 border border-indigo-400/50 ring-2 ring-indigo-400/30";
+                    btn.className = "text-[11px] px-3 py-1 rounded-full bg-indigo-600 font-bold text-white shadow ring-2 ring-indigo-400/40";
                 } else {
-                    btn.className = "text-xs px-3.5 py-2 rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-300 font-semibold transition flex items-center gap-1.5 border border-slate-700";
+                    btn.className = "text-[11px] px-3 py-1 rounded-full bg-slate-800 text-slate-300 font-semibold transition";
                 }
             });
         }
 
-        // ==========================================
-        // Manual IN/OUT Entry Warden Modal Logic
-        // ==========================================
         let cachedStudentsForModal = [];
 
         async function openManualEntryModal(preselectStudentId = null, preselectDir = 'IN') {
@@ -517,7 +598,6 @@
             if (alertBox) alertBox.classList.add('hidden');
             if (modal) modal.classList.remove('hidden');
 
-            // Populate direction radio
             const dirRadios = document.getElementsByName('manualDirection');
             for (const r of dirRadios) {
                 r.checked = (r.value === preselectDir);
@@ -608,14 +688,13 @@
 
         loadHostelData();
         fetchCameraMode();
-        setInterval(loadHostelData, 5000); // Auto refresh logs & stats every 5s
+        setInterval(loadHostelData, 5000);
     </script>
 
-    <!-- Manual Entry Modal Container -->
+    <!-- Manual Entry Modal Container (Light Theme) -->
     <div id="manualEntryModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden transform transition-all">
-            <!-- Modal Header -->
-            <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
+        <div class="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-lg overflow-hidden transform transition-all text-slate-900">
+            <div class="bg-slate-900 text-white px-6 py-4 flex items-center justify-between border-b border-slate-800">
                 <div class="flex items-center space-x-2.5">
                     <div class="p-2 bg-indigo-600/30 rounded-lg text-indigo-400 border border-indigo-500/30">
                         <i data-lucide="user-check" class="w-5 h-5"></i>
@@ -630,19 +709,16 @@
                 </button>
             </div>
 
-            <!-- Modal Form -->
             <form id="manualEntryForm" onsubmit="submitManualEntry(event)" class="p-6 space-y-5">
-                <!-- Student Selection -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                         Select Hostel Student <span class="text-rose-500">*</span>
                     </label>
-                    <select id="manualStudentSelect" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 font-medium">
+                    <select id="manualStudentSelect" required class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 font-medium">
                         <option value="">-- Choose Student --</option>
                     </select>
                 </div>
 
-                <!-- Direction Selection -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                         Movement Direction <span class="text-rose-500">*</span>
@@ -650,36 +726,33 @@
                     <div class="grid grid-cols-2 gap-3">
                         <label class="cursor-pointer">
                             <input type="radio" name="manualDirection" value="IN" checked class="peer sr-only">
-                            <div class="px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 peer-checked:bg-emerald-50 peer-checked:border-emerald-500 peer-checked:text-emerald-700 font-bold text-sm text-slate-600 flex items-center justify-center gap-2 transition shadow-sm">
+                            <div class="px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 peer-checked:bg-emerald-50 peer-checked:border-emerald-500 peer-checked:text-emerald-700 font-bold text-xs text-slate-600 flex items-center justify-center gap-2 transition shadow-sm">
                                 <i data-lucide="log-in" class="w-4 h-4 text-emerald-600"></i> ENTRY (IN)
                             </div>
                         </label>
                         <label class="cursor-pointer">
                             <input type="radio" name="manualDirection" value="OUT" class="peer sr-only">
-                            <div class="px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 peer-checked:bg-amber-50 peer-checked:border-amber-500 peer-checked:text-amber-700 font-bold text-sm text-slate-600 flex items-center justify-center gap-2 transition shadow-sm">
+                            <div class="px-4 py-3 rounded-xl border border-slate-200 bg-slate-50 peer-checked:bg-amber-50 peer-checked:border-amber-500 peer-checked:text-amber-700 font-bold text-xs text-slate-600 flex items-center justify-center gap-2 transition shadow-sm">
                                 <i data-lucide="log-out" class="w-4 h-4 text-amber-600"></i> EXIT (OUT)
                             </div>
                         </label>
                     </div>
                 </div>
 
-                <!-- Warden Remarks / Notes -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
                         Warden Remarks / Gate Pass Details
                     </label>
-                    <textarea id="manualNotes" rows="2" placeholder="e.g. Verified gate pass #104, manual check by warden..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 resize-none"></textarea>
+                    <textarea id="manualNotes" rows="2" placeholder="e.g. Verified gate pass #104..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 resize-none"></textarea>
                 </div>
 
-                <!-- Alert Message Box -->
                 <div id="manualEntryAlert" class="hidden text-xs p-3 rounded-xl"></div>
 
-                <!-- Form Actions -->
                 <div class="flex items-center justify-end space-x-3 pt-2">
-                    <button type="button" onclick="closeManualEntryModal()" class="px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">
+                    <button type="button" onclick="closeManualEntryModal()" class="px-4 py-2 rounded-xl border border-slate-300 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition">
                         Cancel
                     </button>
-                    <button type="submit" id="btnSubmitManualEntry" class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-md transition flex items-center gap-2">
+                    <button type="submit" id="btnSubmitManualEntry" class="px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-sm transition flex items-center gap-2">
                         <i data-lucide="check-circle" class="w-4 h-4"></i> Record Movement
                     </button>
                 </div>
@@ -688,4 +761,3 @@
     </div>
 </body>
 </html>
-

@@ -215,3 +215,20 @@ def add_student_to_cache(
             'room_number': room_number or branch
         }
         logger.info("Added/updated student %s in memory face cache (Total: %d).", sid_clean, len(_student_ids))
+
+
+def remove_student_from_cache(student_id: str):
+    """Remove a student by ID from the in-memory face cache matrix."""
+    global _student_ids, _student_metadata, _embeddings_matrix
+    with _cache_lock:
+        sid_clean = str(student_id).strip()
+        if sid_clean in _student_ids:
+            idx = _student_ids.index(sid_clean)
+            _student_ids.pop(idx)
+            _student_metadata.pop(sid_clean, None)
+            if _embeddings_matrix is not None:
+                if len(_student_ids) == 0:
+                    _embeddings_matrix = None
+                else:
+                    _embeddings_matrix = np.delete(_embeddings_matrix, idx, axis=0)
+            logger.info("Removed student %s from in-memory face cache (Remaining: %d).", sid_clean, len(_student_ids))

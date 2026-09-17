@@ -465,3 +465,119 @@ select.input-dark-glass {
     transform-origin: 50% 50%;
 }
 
+/* ==========================================
+   REFERENCE PHOTO LAYOUT REDESIGN STYLES (PROFESSIONAL LIGHT THEME)
+   ========================================== */
+
+/* Top Container Executive Hero Card */
+.hero-dark-card {
+    background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 28px;
+    box-shadow: 0 20px 40px -10px rgba(15, 23, 42, 0.25), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    position: relative;
+    color: #ffffff;
+}
+
+/* Bottom Cutout Notch for Camera Toggle Control */
+.notch-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+    z-index: 20;
+}
+
+.header-notch {
+    background: #0f172a;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    border-top: none;
+    padding: 0.5rem 1.5rem;
+    border-radius: 0 0 24px 24px;
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.3);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+}
+
+/* Curved side transitions for notch */
+.header-notch::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -20px;
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border-top-right-radius: 16px;
+    box-shadow: 6px -6px 0 6px #0f172a;
+    pointer-events: none;
+}
+
+.header-notch::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: -20px;
+    width: 20px;
+    height: 20px;
+    background: transparent;
+    border-top-left-radius: 16px;
+    box-shadow: -6px -6px 0 6px #0f172a;
+    pointer-events: none;
+}
+
+/* Wide Section Header Title Pill (Professional Light Theme) */
+.section-title-pill {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 9999px;
+    padding: 0.65rem 1.5rem;
+    color: #0f172a;
+    font-weight: 700;
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.65rem;
+    box-shadow: 0 4px 15px rgba(15, 23, 42, 0.04);
+}
+
+/* Light Card Panel Container */
+.light-card-panel {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 24px;
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.03);
+    color: #0f172a;
+    transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.light-card-panel:hover {
+    border-color: rgba(99, 102, 241, 0.35);
+    box-shadow: 0 15px 35px rgba(15, 23, 42, 0.06);
+}
+
+/* Mobile wireframe refinements */
+@media (max-width: 767px) {
+    .hero-dark-card {
+        border-radius: 20px;
+        padding: 1.25rem 1rem !important;
+    }
+    
+    .header-notch {
+        padding: 0.4rem 1rem;
+        border-radius: 0 0 18px 18px;
+    }
+    
+    .section-title-pill {
+        width: 100%;
+        justify-content: space-between;
+        border-radius: 16px;
+    }
+}
+
+
+

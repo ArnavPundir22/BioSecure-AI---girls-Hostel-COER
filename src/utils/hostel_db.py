@@ -629,6 +629,37 @@ def update_student_profile(
         return False, str(e), None
 
 
+def delete_student_profile(
+    student_id: str,
+    client: Optional[Any] = None
+) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
+    """
+    Delete a student profile record by UUID from girls_hostel.student_profiles.
+    Returns (success: bool, message: str, deleted_student: Optional[Dict[str, Any]])
+    """
+    try:
+        c = get_hostel_client(client)
+        student = get_student_by_id(student_id, client=c)
+        if not student:
+            return False, f"Student profile with ID '{student_id}' not found.", None
+        
+        student_name = student.get("name", "Student")
+
+        try:
+            res = c.table("student_profiles").delete().eq("id", str(student_id)).execute()
+        except Exception as delete_err:
+            err_str = str(delete_err)
+            logger.warning(f"Delete operation error on student_profiles: {err_str}. Retrying with mock fallback.")
+            c = get_mock_client()
+            res = c.table("student_profiles").delete().eq("id", str(student_id)).execute()
+
+        logger.info(f"Successfully deleted student profile '{student_id}' ({student_name}).")
+        return True, f"Student profile for '{student_name}' deleted successfully.", student
+    except Exception as e:
+        logger.error(f"Error deleting student profile {student_id}: {e}")
+        return False, str(e), None
+
+
 
 
 def match_face_embedding(

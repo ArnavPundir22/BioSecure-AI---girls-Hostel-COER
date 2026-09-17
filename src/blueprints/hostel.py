@@ -348,6 +348,35 @@ def update_student_api(student_id):
         return jsonify({"error": str(e)}), 500
 
 
+@hostel_bp.route("/api/delete_student/<student_id>", methods=["DELETE", "POST"])
+@hostel_bp.route("/api/students/<student_id>", methods=["DELETE"])
+def delete_student_api(student_id):
+    """Delete a student profile record and update in-memory face recognition cache."""
+    try:
+        success, msg, deleted_student = hostel_db.delete_student_profile(student_id=student_id)
+        if not success:
+            err_code = 404 if "not found" in msg.lower() else 500
+            return jsonify({"error": msg}), err_code
+
+        # Synchronize face cache
+        try:
+            from src.utils.face_cache import remove_student_from_cache, reload_face_cache
+            remove_student_from_cache(student_id)
+            reload_face_cache()
+        except Exception as cache_err:
+            logger.warning(f"Notice updating face cache on delete: {cache_err}")
+
+        logger.info(f"Deleted student profile '{student_id}' via API.")
+        return jsonify({
+            "status": "success",
+            "message": msg,
+            "student": deleted_student
+        }), 200
+    except Exception as e:
+        logger.error(f"Error deleting student profile {student_id}: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 @hostel_bp.route("/api/movement_logs")
 def get_movement_logs():
     """Return recent student entry/exit logs."""

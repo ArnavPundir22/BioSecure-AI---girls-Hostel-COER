@@ -78,52 +78,60 @@
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased pb-24 md:pb-8">
+<body class="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased pb-24 md:pb-12">
 
-    <!-- Top Navigation Header -->
-    <header class="bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 px-6 py-4 flex items-center justify-between shadow-sm">
-        <div class="flex items-center space-x-3">
-            <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-200 shadow-sm">
-                <i data-lucide="shield-check" class="w-6 h-6"></i>
+    <!-- Top Window Bar & Navigation Header (Slate Minimalist Light Theme) -->
+    <header class="bg-white/90 backdrop-blur-md sticky top-0 z-50 border-b border-slate-200 px-4 sm:px-6 py-3.5 shadow-sm">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            
+            <!-- Window Control Dots & Branding -->
+            <div class="flex items-center space-x-3">
+                <div class="hidden sm:flex items-center space-x-1.5 mr-2">
+                    <span class="w-3 h-3 rounded-full bg-rose-500 inline-block shadow-sm"></span>
+                    <span class="w-3 h-3 rounded-full bg-amber-500 inline-block shadow-sm"></span>
+                    <span class="w-3 h-3 rounded-full bg-emerald-500 inline-block shadow-sm"></span>
+                </div>
+                <div class="p-2 bg-indigo-50 text-indigo-600 rounded-xl border border-indigo-200 shadow-sm">
+                    <i data-lucide="shield-check" class="w-5 h-5"></i>
+                </div>
+                <div>
+                    <h1 class="text-base sm:text-lg font-bold tracking-tight text-slate-900 flex items-center gap-2">
+                        BioSecure AI <span class="text-[10px] px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 font-semibold uppercase tracking-wider">GIRLS HOSTEL</span>
+                    </h1>
+                </div>
             </div>
-            <div>
-                <h1 class="text-xl font-bold tracking-tight text-slate-900 flex items-center gap-2">
-                    BioSecure AI <span class="text-xs px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-700 border border-rose-200 font-semibold">GIRLS HOSTEL</span>
-                </h1>
-                <p class="text-xs text-slate-500">Isolated Schema Scope: <code class="text-amber-600 font-mono font-semibold">girls_hostel</code></p>
+
+            <!-- Navigation Tabs (Desktop Light Theme) -->
+            <nav class="hidden md:flex items-center space-x-1 bg-slate-100 p-1.5 rounded-xl border border-slate-200 text-xs font-medium">
+                <a href="/hostel/" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/70 transition flex items-center gap-1.5 font-medium">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Live Monitor
+                </a>
+                <a href="/hostel/students" class="px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold shadow-sm flex items-center gap-1.5">
+                    <i data-lucide="users" class="w-4 h-4"></i> Student Directory
+                </a>
+                <a href="/hostel/logs" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/70 transition flex items-center gap-1.5 font-medium">
+                    <i data-lucide="list" class="w-4 h-4"></i> Movement Logs
+                </a>
+                <a href="/hostel/curfew" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/70 transition flex items-center gap-1.5 font-medium">
+                    <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
+                </a>
+            </nav>
+
+            <!-- Actions & Registration Button -->
+            <div class="flex items-center space-x-4">
+                <button onclick="scrollToRegistration()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs rounded-xl shadow-sm flex items-center gap-2 transition">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i> Register Student Profile
+                </button>
+
+                <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-700">
+                    <i data-lucide="menu" class="w-5 h-5"></i>
+                </button>
             </div>
-        </div>
-
-        <!-- Navigation Tabs -->
-        <nav class="hidden md:flex items-center space-x-1 bg-slate-100 p-1.5 rounded-xl border border-slate-200 text-xs">
-            <a href="/hostel/" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
-                <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Live Monitor
-            </a>
-            <a href="/hostel/students" class="px-4 py-2 rounded-lg bg-indigo-600 text-white font-semibold shadow-sm flex items-center gap-1.5">
-                <i data-lucide="users" class="w-4 h-4"></i> Student Directory
-            </a>
-            <a href="/hostel/logs" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
-                <i data-lucide="list" class="w-4 h-4"></i> Movement Logs
-            </a>
-            <a href="/hostel/curfew" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/60 transition flex items-center gap-1.5 font-medium">
-                <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
-            </a>
-        </nav>
-
-        <div class="flex items-center space-x-4">
-            <button onclick="scrollToRegistration()" class="text-xs px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold transition flex items-center gap-2 shadow-md shadow-indigo-600/20">
-                <i data-lucide="user-plus" class="w-4 h-4"></i> Register Student Profile
-            </button>
-
-            <!-- Mobile Menu Toggle Button (Mobile Only) -->
-            <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200 text-slate-700 transition">
-                <i data-lucide="menu" class="w-6 h-6"></i>
-            </button>
         </div>
     </header>
 
     <!-- Mobile Dropdown Navigation Menu -->
-    <div id="mobileMenu" class="hidden md:hidden bg-white/95 backdrop-blur-md border-b border-slate-200 px-6 py-3 space-y-2 text-sm shadow-md">
+    <div id="mobileMenu" class="hidden md:hidden bg-white border-b border-slate-200 px-6 py-3 space-y-2 text-sm text-slate-800 shadow-md">
         <a href="/hostel/" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
             <i data-lucide="layout-dashboard" class="w-4 h-4"></i> Live Monitor
         </a>
@@ -139,7 +147,68 @@
     </div>
 
     <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-6 py-8 space-y-10">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 pt-6 space-y-8">
+
+        <!-- ====================================================================
+             TOP CONTAINER: EXECUTIVE CONTRAST HERO CARD (Reference Wireframe Top)
+             ==================================================================== -->
+        <section class="hero-dark-card p-6 sm:p-8">
+            <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-white/10">
+                <!-- System Scope Pill -->
+                <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs text-slate-200 backdrop-blur-md">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span>Schema Scope: <code class="text-amber-300 font-mono font-semibold">girls_hostel.student_profiles</code></span>
+                </div>
+
+                <!-- Action Badge -->
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-200 border border-indigo-400/30 text-xs font-mono font-bold">
+                    <i data-lucide="cpu" class="w-3.5 h-3.5 text-indigo-300"></i> InsightFace ArcFace 512D Biometric Embeddings
+                </div>
+            </div>
+
+            <!-- Hero Banner Content -->
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 pt-6 items-center">
+                <div class="lg:col-span-8 space-y-3">
+                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-white leading-tight font-geist">
+                        Hostel Student Directory & Biometric Registration
+                    </h2>
+                    <p class="text-slate-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
+                        Manage enrolled hostel students, edit profiles, register 512D facial embeddings using guided webcam auto-capture, and issue manual gate override status checks.
+                    </p>
+                </div>
+
+                <div class="lg:col-span-4 space-y-3">
+                    <div class="p-3.5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="p-2 rounded-xl bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">
+                                <i data-lucide="user-plus" class="w-5 h-5"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xs font-bold text-white">Enroll New Student</h4>
+                                <p class="text-[11px] text-slate-300">Guided camera face capture</p>
+                            </div>
+                        </div>
+                        <button onclick="scrollToRegistration()" class="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow transition">
+                            Register
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Cutout Notch for Camera Mode Toggle -->
+            <div class="notch-wrapper">
+                <div class="header-notch">
+                    <span class="text-xs font-bold text-slate-300 flex items-center gap-1.5">
+                        <i data-lucide="users" class="w-4 h-4 text-indigo-400"></i> Directory View Mode:
+                    </span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="text-[11px] px-3 py-1 rounded-full bg-indigo-600 font-bold text-white shadow">
+                            Active Students
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </section>
 
         <!-- Section 1: Guided Registration Form Card -->
         <section id="registrationSection" class="glass-panel p-6 sm:p-8 rounded-2xl bg-white border border-slate-200 shadow-xl space-y-6">
@@ -450,6 +519,61 @@
             </div>
         </div>
 
+        <!-- Delete Student Confirmation Modal -->
+        <div id="deleteStudentModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 transition-all duration-300">
+            <div class="relative w-full max-w-md bg-white rounded-2xl border border-slate-200 shadow-2xl overflow-hidden p-6 space-y-5 animate-in fade-in zoom-in-95 duration-200">
+                
+                <!-- Modal Header -->
+                <div class="flex items-start space-x-4">
+                    <div class="w-12 h-12 rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 flex items-center justify-center shrink-0 shadow-xs">
+                        <i data-lucide="trash-2" class="w-6 h-6 text-rose-600 animate-pulse"></i>
+                    </div>
+                    <div class="flex-1">
+                        <h3 class="text-lg font-bold text-slate-900 leading-tight">Delete Student Profile?</h3>
+                        <p class="text-xs text-slate-500 mt-1">This action is permanent and cannot be undone.</p>
+                    </div>
+                    <button type="button" onclick="closeDeleteModal()" class="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-xl transition">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+
+                <!-- Student Info Highlight Box -->
+                <div class="p-4 bg-rose-50/60 rounded-xl border border-rose-200/80 space-y-2">
+                    <input type="hidden" id="deleteTargetStudentId">
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-500 font-medium">Student Name:</span>
+                        <span id="deleteModalStudentName" class="font-bold text-slate-900 text-sm">--</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-500 font-medium">Roll Number:</span>
+                        <span id="deleteModalStudentRoll" class="font-mono font-bold text-indigo-700">--</span>
+                    </div>
+                    <div class="flex items-center justify-between text-xs">
+                        <span class="text-slate-500 font-medium">Room & Block:</span>
+                        <span id="deleteModalStudentRoom" class="font-semibold text-slate-800">--</span>
+                    </div>
+                </div>
+
+                <div class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs text-slate-600 flex items-start gap-2">
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500 shrink-0 mt-0.5"></i>
+                    <span>This will permanently remove the student profile record and unregister all 512D ArcFace facial recognition embeddings from active gate monitoring.</span>
+                </div>
+
+                <!-- Alert Notification Box -->
+                <div id="deleteMessageBox" class="hidden p-3 rounded-xl text-xs font-semibold text-center border shadow-xs"></div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center justify-end space-x-3 pt-3 border-t border-slate-200">
+                    <button type="button" onclick="closeDeleteModal()" class="px-4 py-2.5 rounded-xl border border-slate-300 text-slate-700 font-semibold text-xs hover:bg-slate-50 transition shadow-xs">
+                        Cancel
+                    </button>
+                    <button type="button" id="confirmDeleteBtn" onclick="confirmDeleteStudent()" class="px-5 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 active:scale-95 text-white font-bold text-xs transition flex items-center gap-2 shadow-md shadow-rose-600/20">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i> Delete Student
+                    </button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
 
@@ -647,7 +771,7 @@
             grid.innerHTML = list.map(s => {
                 const isOut = s.current_status === 'OUT';
                 return `
-                    <div class="glass-panel p-6 rounded-2xl space-y-4 bg-white border ${isOut ? 'border-amber-300 bg-amber-50/40' : 'border-slate-200'} shadow-sm hover:shadow-md transition">
+                    <div id="student-card-${s.id}" class="glass-panel p-6 rounded-2xl space-y-4 bg-white border ${isOut ? 'border-amber-300 bg-amber-50/40' : 'border-slate-200'} shadow-sm hover:shadow-md transition-all duration-300">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center border border-indigo-200 text-base shadow-sm">
@@ -658,9 +782,14 @@
                                     <p class="text-xs text-slate-500 font-mono">Roll: ${s.roll_number}</p>
                                 </div>
                             </div>
-                            <span class="text-xs px-2.5 py-1 rounded-full font-bold ${isOut ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'}">
-                                ${s.current_status || 'IN'}
-                            </span>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs px-2.5 py-1 rounded-full font-bold ${isOut ? 'bg-amber-100 text-amber-800 border border-amber-200' : 'bg-emerald-100 text-emerald-800 border border-emerald-200'}">
+                                    ${s.current_status || 'IN'}
+                                </span>
+                                <button onclick="openDeleteModal('${s.id}')" class="p-1.5 rounded-xl bg-slate-50 hover:bg-rose-50 text-slate-400 hover:text-rose-600 border border-slate-200 hover:border-rose-200 transition-all duration-200 group/icon-del shadow-2xs hover:scale-110 active:scale-90" title="Delete Student Profile">
+                                    <i data-lucide="trash-2" class="w-4 h-4 group-hover/icon-del:rotate-12 transition-transform duration-200"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 text-xs text-slate-600 pt-2 border-t border-slate-100 pb-1">
@@ -698,13 +827,16 @@
                         </div>
 
                         <div class="flex items-center gap-2 pt-3 border-t border-slate-100">
-                            <button onclick="openEditModal('${s.id}')" class="py-1.5 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold text-xs flex items-center justify-center gap-1 transition shadow-2xs" title="Edit Student Profile">
+                            <button onclick="openEditModal('${s.id}')" class="py-1.5 px-3 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 font-bold text-xs flex items-center justify-center gap-1 transition shadow-2xs hover:scale-102" title="Edit Student Profile">
                                 <i data-lucide="edit-3" class="w-3.5 h-3.5"></i> Edit
                             </button>
-                            <button onclick="quickManualEntry('${s.id}', 'IN', '${s.name.replace(/'/g, "\\'")}')" class="flex-1 py-1.5 px-3 rounded-lg ${!isOut ? 'bg-emerald-50 text-emerald-700 border-emerald-200 opacity-60' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'} border font-bold text-xs flex items-center justify-center gap-1 transition">
+                            <button onclick="openDeleteModal('${s.id}')" class="py-1.5 px-3 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200/80 font-bold text-xs flex items-center justify-center gap-1.5 transition-all duration-200 group/btn-del shadow-2xs hover:scale-105 active:scale-95 hover:shadow-md hover:shadow-rose-600/20" title="Delete Student Profile">
+                                <i data-lucide="trash-2" class="w-3.5 h-3.5 group-hover/btn-del:-rotate-12 group-hover/btn-del:scale-110 transition-transform duration-200"></i> Delete
+                            </button>
+                            <button onclick="quickManualEntry('${s.id}', 'IN', '${s.name.replace(/'/g, "\\'")}')" class="flex-1 py-1.5 px-2.5 rounded-lg ${!isOut ? 'bg-emerald-50 text-emerald-700 border-emerald-200 opacity-60' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'} border font-bold text-xs flex items-center justify-center gap-1 transition">
                                 <i data-lucide="log-in" class="w-3.5 h-3.5"></i> Mark IN
                             </button>
-                            <button onclick="quickManualEntry('${s.id}', 'OUT', '${s.name.replace(/'/g, "\\'")}')" class="flex-1 py-1.5 px-3 rounded-lg ${isOut ? 'bg-amber-50 text-amber-700 border-amber-200 opacity-60' : 'bg-amber-600 hover:bg-amber-700 text-white shadow-sm'} border font-bold text-xs flex items-center justify-center gap-1 transition">
+                            <button onclick="quickManualEntry('${s.id}', 'OUT', '${s.name.replace(/'/g, "\\'")}')" class="flex-1 py-1.5 px-2.5 rounded-lg ${isOut ? 'bg-amber-50 text-amber-700 border-amber-200 opacity-60' : 'bg-amber-600 hover:bg-amber-700 text-white shadow-sm'} border font-bold text-xs flex items-center justify-center gap-1 transition">
                                 <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Mark OUT
                             </button>
                         </div>
@@ -712,6 +844,96 @@
                 `;
             }).join('');
             lucide.createIcons();
+        }
+
+        function openDeleteModal(studentId) {
+            const student = allStudents.find(s => String(s.id) === String(studentId));
+            if (!student) return;
+
+            document.getElementById('deleteTargetStudentId').value = student.id;
+            document.getElementById('deleteModalStudentName').textContent = student.name;
+            document.getElementById('deleteModalStudentRoll').textContent = student.roll_number || 'N/A';
+            document.getElementById('deleteModalStudentRoom').textContent = `${student.room_number || 'N/A'} (${student.hostel_block || 'Block-A'})`;
+
+            const msgBox = document.getElementById('deleteMessageBox');
+            msgBox.classList.add('hidden');
+            msgBox.textContent = '';
+
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i data-lucide="trash-2" class="w-4 h-4"></i> Delete Student';
+
+            const modal = document.getElementById('deleteStudentModal');
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeDeleteModal() {
+            const modal = document.getElementById('deleteStudentModal');
+            modal.classList.add('hidden');
+        }
+
+        async function confirmDeleteStudent() {
+            const studentId = document.getElementById('deleteTargetStudentId').value;
+            if (!studentId) return;
+
+            const student = allStudents.find(s => String(s.id) === String(studentId));
+            const studentName = student ? student.name : "Student";
+            const confirmBtn = document.getElementById('confirmDeleteBtn');
+            const msgBox = document.getElementById('deleteMessageBox');
+
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Deleting...';
+            lucide.createIcons();
+
+            try {
+                const res = await fetch(`/hostel/api/delete_student/${studentId}`, {
+                    method: 'DELETE'
+                });
+                const data = await res.json();
+
+                if (res.ok) {
+                    msgBox.textContent = data.message || `Student '${studentName}' profile deleted successfully!`;
+                    msgBox.className = 'p-3 mb-2 rounded-xl font-medium text-center shadow-xs text-xs bg-emerald-100 text-emerald-800 border border-emerald-200';
+                    msgBox.classList.remove('hidden');
+
+                    setTimeout(() => {
+                        closeDeleteModal();
+
+                        // Perform smooth disintegrate/exit animation on card before refresh
+                        const cardEl = document.getElementById(`student-card-${studentId}`);
+                        if (cardEl) {
+                            cardEl.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                            cardEl.style.transform = 'scale(0.8) translateY(-15px)';
+                            cardEl.style.opacity = '0';
+                            cardEl.style.filter = 'blur(4px)';
+                            setTimeout(() => {
+                                allStudents = allStudents.filter(s => String(s.id) !== String(studentId));
+                                renderStudents(allStudents);
+                                showMessage(`Student profile '${studentName}' successfully removed.`, true);
+                            }, 400);
+                        } else {
+                            loadStudents();
+                            showMessage(`Student profile '${studentName}' successfully removed.`, true);
+                        }
+                    }, 600);
+                } else {
+                    msgBox.textContent = data.error || 'Failed to delete student profile.';
+                    msgBox.className = 'p-3 mb-2 rounded-xl font-medium text-center shadow-xs text-xs bg-rose-100 text-rose-800 border border-rose-200';
+                    msgBox.classList.remove('hidden');
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<i data-lucide="trash-2" class="w-4 h-4"></i> Delete Student';
+                    lucide.createIcons();
+                }
+            } catch (err) {
+                console.error('Error deleting student:', err);
+                msgBox.textContent = 'Network error while attempting deletion.';
+                msgBox.className = 'p-3 mb-2 rounded-xl font-medium text-center shadow-xs text-xs bg-rose-100 text-rose-800 border border-rose-200';
+                msgBox.classList.remove('hidden');
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i data-lucide="trash-2" class="w-4 h-4"></i> Delete Student';
+                lucide.createIcons();
+            }
         }
 
         function openEditModal(studentId) {
