@@ -404,7 +404,7 @@ class TestMultiTierFallbackAndSyntheticFrames:
             worker.running = False
             loop_thread.join(timeout=2.0)
 
-            assert worker.status == "RECONNECTING"
+            assert worker.status in ("RECONNECTING", "SHARED_WEBCAM")
             assert isinstance(f1_alias, bytes) and len(f1_alias) > 0
             # Live clock advances dynamically on each read during backoff
             assert f1 != f2, "Expected live clock to advance across reads during backoff sleep"

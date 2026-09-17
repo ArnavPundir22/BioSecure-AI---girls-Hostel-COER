@@ -45,6 +45,9 @@
                 <a href="/hostel/curfew" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/70 transition flex items-center gap-1.5 font-medium">
                     <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
                 </a>
+                <a href="/admin/cameras" class="px-4 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-white/70 transition flex items-center gap-1.5 font-medium">
+                    <i data-lucide="camera" class="w-4 h-4"></i> Camera Setup
+                </a>
             </nav>
 
             <!-- Actions & Live Clock -->
@@ -78,6 +81,9 @@
         </a>
         <a href="/hostel/curfew" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
             <i data-lucide="clock" class="w-4 h-4"></i> Curfew Management
+        </a>
+        <a href="/admin/cameras" class="flex items-center gap-2 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-100 font-medium">
+            <i data-lucide="camera" class="w-4 h-4"></i> Camera Setup
         </a>
     </div>
 
@@ -250,6 +256,7 @@
 
                     <!-- Live Video Frame Container -->
                     <div class="relative aspect-video bg-slate-900 rounded-2xl overflow-hidden border border-slate-800 shadow-inner flex items-center justify-center">
+                        <span class="hidden" data-feed-in="/hostel/video_feed?role=IN" data-feed-out="/hostel/video_feed?role=OUT"></span>
                         <img id="cam1Feed" src="/hostel/video_feed?role=IN" class="w-full h-full object-cover" alt="Live Host Camera Feed" onerror="this.onerror=null; this.classList.add('hidden'); document.getElementById('cam1Placeholder').classList.remove('hidden');" />
                         
                         <!-- Fallback Placeholder -->

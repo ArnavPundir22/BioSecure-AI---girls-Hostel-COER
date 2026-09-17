@@ -55,11 +55,14 @@ def create_app() -> Flask:
     # ------------------------------------------------------------------
     from src.blueprints.auth import auth_bp
     from src.blueprints.hostel import hostel_bp
+    from src.blueprints.admin import admin_bp, cameras_api_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(hostel_bp)
+    app.register_blueprint(admin_bp)
+    app.register_blueprint(cameras_api_bp)
 
-    logger.info("Girls Hostel & Auth blueprints registered successfully.")
+    logger.info("Girls Hostel, Admin & Auth blueprints registered successfully.")
 
     # Pre-load in-memory face embedding cache for instant BLAS matching (< 1ms)
     try:
@@ -142,9 +145,17 @@ def create_app() -> Flask:
                 session['is_admin'] = payload.get('is_admin', False)
                 return None
 
+        if session.get("logged_in"):
+            g.user = {
+                "username": session.get("username", "admin"),
+                "is_admin": session.get("is_admin", True),
+                "user_id": session.get("user_id", "00000000-0000-0000-0000-000000000001")
+            }
+            return None
+
         # Unauthenticated request
         if _is_api_request() or request.path.startswith("/hostel/api/"):
-            return jsonify({"error": "Authentication required", "message": "Valid JWT token required"}), 401
+            return jsonify({"error": "Authentication required", "message": "Valid JWT token required", "success": False}), 401
 
         return redirect(url_for("auth.login"))
 
@@ -152,6 +163,11 @@ def create_app() -> Flask:
     def index_redirect():
         """Redirect root URL directly to Girls Hostel Warden Dashboard."""
         return redirect(url_for("hostel.dashboard"))
+
+    @app.route("/add_student")
+    def add_student_route():
+        """Alias route for student registration page."""
+        return render_template("hostel_students.html")
 
     # ------------------------------------------------------------------
     # Health check — used by load balancers / container orchestrators
