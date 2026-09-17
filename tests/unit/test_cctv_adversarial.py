@@ -386,7 +386,7 @@ class TestMultiTierFallbackAndSyntheticFrames:
         Hardened: Synthetic diagnostic frames always reflect the current live timestamp
         on every get_latest_jpeg() / get_frame() read, even during exponential backoff sleep.
         """
-        worker = CameraStreamWorker("OUT", {"vendor": "Custom RTSP", "custom_rtsp_url": "rtsp://127.0.0.1:59999/live"})
+        worker = CameraStreamWorker("IN", {"vendor": "Custom RTSP", "custom_rtsp_url": "rtsp://127.0.0.1:59999/live"})
 
         # Force capture_loop to fail both tier 1 and tier 2 immediately
         with patch("src.services.hostel_camera._open_capture_with_timeout", return_value=None):
@@ -404,7 +404,7 @@ class TestMultiTierFallbackAndSyntheticFrames:
             worker.running = False
             loop_thread.join(timeout=2.0)
 
-            assert worker.status in ("RECONNECTING", "SHARED_WEBCAM")
+            assert worker.status == "RECONNECTING"
             assert isinstance(f1_alias, bytes) and len(f1_alias) > 0
             # Live clock advances dynamically on each read during backoff
             assert f1 != f2, "Expected live clock to advance across reads during backoff sleep"
