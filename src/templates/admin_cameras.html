@@ -78,12 +78,42 @@
       color: #38bdf8;
       word-break: break-all;
     }
+
+    /* Sidebar readability adjustments */
+    .biosecure-sidebar nav a:not(.biosecure-active) {
+      color: #475569 !important;
+    }
+
+    .biosecure-sidebar nav a:not(.biosecure-active) svg,
+    .biosecure-sidebar nav a:not(.biosecure-active) i {
+      color: #64748b !important;
+    }
+
+    .biosecure-sidebar .sidebar-label {
+      color: #334155 !important;
+    }
+
+    .biosecure-sidebar .sidebar-user-label {
+      color: #475569 !important;
+    }
+
+    .biosecure-sidebar .sidebar-username {
+      color: #1e293b !important;
+    }
+
+    .biosecure-sidebar .sidebar-muted-link {
+      color: #475569 !important;
+    }
+
+    .biosecure-sidebar .biosecure-active {
+      color: #1e3a8a !important;
+    }
   </style>
 </head>
 <body class="bg-[#070d19] text-slate-100 min-h-screen pb-24 md:pb-8 flex flex-col md:flex-row">
 
   <!-- Desktop Left Sidebar -->
-  <aside class="hidden md:flex flex-col fixed top-0 left-0 h-screen w-64 bg-[#0b1326]/85 backdrop-blur-xl border-r border-white/10 p-6 z-50">
+  <aside class="biosecure-sidebar hidden md:flex flex-col fixed top-0 left-0 h-screen w-64 bg-[#0b1326]/85 backdrop-blur-xl border-r border-white/10 p-6 z-50">
     <div class="flex items-center gap-3 mb-8">
       <i data-lucide="scan-face" class="w-8 h-8 text-blue-500"></i>
       <h1 class="font-geist text-xl font-bold text-blue-400 tracking-tight">BioSecure AI</h1>
@@ -99,11 +129,7 @@
         <i data-lucide="home" class="w-5 h-5"></i>
         <span>Home</span>
       </a>
-      <a href="/viewer" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-gray-300 hover:bg-white/5">
-        <i data-lucide="bar-chart-2" class="w-5 h-5"></i>
-        <span>View Records</span>
-      </a>
-      <a href="/students" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-gray-300 hover:bg-white/5">
+      <a href="/hostel/students" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-gray-300 hover:bg-white/5">
         <i data-lucide="users" class="w-5 h-5"></i>
         <span>All Students</span>
       </a>
@@ -115,11 +141,7 @@
         <i data-lucide="settings" class="w-5 h-5"></i>
         <span>Admin Portal</span>
       </a>
-      <a href="/admin/drift" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all text-gray-300 hover:bg-white/5">
-        <i data-lucide="shield-alert" class="w-5 h-5 text-amber-400"></i>
-        <span>Drift Monitoring</span>
-      </a>
-      <a href="/admin/cameras" class="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-sm">
+      <a href="/admin/cameras" class="biosecure-active flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-sm">
         <i data-lucide="video" class="w-5 h-5 text-indigo-400"></i>
         <span>CCTV Cameras</span>
       </a>
@@ -131,8 +153,8 @@
 
     <div class="pt-6 border-t border-white/10 flex flex-col gap-4">
       <div class="flex flex-col">
-        <span class="text-xs text-gray-500">Logged in as</span>
-        <span class="text-sm font-semibold text-gray-200">{{ session_username or 'Admin' }}</span>
+        <span class="sidebar-user-label text-xs text-gray-500">Logged in as</span>
+        <span class="sidebar-username text-sm font-semibold text-gray-200">{{ session_username or 'Admin' }}</span>
       </div>
       <a href="/logout" class="btn-secondary-glass w-full py-2.5 rounded-lg text-xs font-semibold flex items-center justify-center gap-2 text-rose-400 hover:text-rose-300">
         <i data-lucide="log-out" class="w-4 h-4"></i> Logout
