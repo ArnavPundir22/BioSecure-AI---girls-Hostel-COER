@@ -76,6 +76,10 @@
             transform: rotate(-90deg);
             transform-origin: 50% 50%;
         }
+
+        .hostel-block-section {
+            scroll-margin-top: 100px;
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 min-h-screen font-sans antialiased pb-24 md:pb-12">
@@ -385,8 +389,12 @@
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Hostel Block</label>
-                                <input type="text" name="hostel_block" value="Block-A" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                                <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Hostel Block *</label>
+                                <select name="hostel_block" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                                    <option value="" selected disabled>Select Hostel Block</option>
+                                    <option value="GSB">Gupti Sagar Bhawan (GSB)</option>
+                                    <option value="BCJ">Bhagwan Chand Jain Bhawan (BCJ)</option>
+                                </select>
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Parent Phone *</label>
@@ -411,12 +419,11 @@
             </form>
         </section>
 
-        <!-- Section 2: Enrolled Student Directory Grid -->
+        <!-- Section 2: Enrolled Student Directory -->
         <section class="space-y-6">
             <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
                 <div>
                     <h3 class="text-xl font-bold text-slate-900 tracking-tight">Enrolled Hostel Student Directory</h3>
-                    <p class="text-xs text-slate-500">Database Scope: <code class="text-amber-600 font-mono font-semibold">girls_hostel.student_profiles</code></p>
                 </div>
                 <div class="relative w-full md:w-72">
                     <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
@@ -424,8 +431,44 @@
                 </div>
             </div>
 
-            <div id="studentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Loaded dynamically -->
+            <!-- GSB: Gupti Sagar Bhawan -->
+            <div class="hostel-block-section space-y-4">
+                <div class="flex items-center justify-between px-1">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-200 flex items-center justify-center">
+                            <i data-lucide="building-2" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-bold text-slate-900">GSB</h4>
+                            <p class="text-xs text-slate-500">Gupti Sagar Bhawan</p>
+                        </div>
+                    </div>
+                    <span id="gsbStudentCount" class="px-3 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200 text-xs font-bold">0 Students</span>
+                </div>
+
+                <div id="gsbStudentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- GSB students loaded dynamically -->
+                </div>
+            </div>
+
+            <!-- BCJ: Bhagwan Chand Jain Bhawan -->
+            <div class="hostel-block-section space-y-4 pt-4">
+                <div class="flex items-center justify-between px-1">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200 flex items-center justify-center">
+                            <i data-lucide="building-2" class="w-5 h-5"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-bold text-slate-900">BCJ</h4>
+                            <p class="text-xs text-slate-500">Bhagwan Chand Jain Bhawan</p>
+                        </div>
+                    </div>
+                    <span id="bcjStudentCount" class="px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold">0 Students</span>
+                </div>
+
+                <div id="bcjStudentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <!-- BCJ students loaded dynamically -->
+                </div>
             </div>
         </section>
 
@@ -474,8 +517,11 @@
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Hostel Block</label>
-                            <input type="text" id="editHostelBlock" name="hostel_block" class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                            <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Hostel Block *</label>
+                            <select id="editHostelBlock" name="hostel_block" required class="w-full bg-white border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 focus:outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 shadow-sm">
+                                <option value="GSB">Gupti Sagar Bhawan (GSB)</option>
+                                <option value="BCJ">Bhagwan Chand Jain Bhawan (BCJ)</option>
+                            </select>
                         </div>
                         <div>
                             <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Current Status</label>
@@ -761,25 +807,58 @@
             }
         }
 
-        function renderStudents(list) {
-            const grid = document.getElementById('studentsGrid');
+        function getHostelBlockGroup(student) {
+            const block = String(student.hostel_block || '').trim().toUpperCase();
+
+            if (block === 'GSB' || block.includes('GUPTI SAGAR')) {
+                return 'GSB';
+            }
+
+            if (block === 'BCJ' || block.includes('BHAGWAN CHAND JAIN')) {
+                return 'BCJ';
+            }
+
+            return null;
+        }
+
+        function sortStudentsByName(list) {
+            return [...list].sort((a, b) => {
+                const nameA = String(a.name || '').trim().toLowerCase();
+                const nameB = String(b.name || '').trim().toLowerCase();
+                return nameA.localeCompare(nameB);
+            });
+        }
+
+        function renderStudentCards(list, gridId, blockName) {
+            const grid = document.getElementById(gridId);
+
+            if (!grid) return;
+
             if (list.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-500 text-xs">No student profiles found in girls_hostel schema.</div>';
+                grid.innerHTML = `
+                    <div class="col-span-full text-center py-10 rounded-2xl bg-white border border-dashed border-slate-300">
+                        <i data-lucide="users-round" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+                        <p class="text-xs font-semibold text-slate-500">No students registered in ${blockName}.</p>
+                    </div>
+                `;
+                lucide.createIcons();
                 return;
             }
 
             grid.innerHTML = list.map(s => {
                 const isOut = s.current_status === 'OUT';
+                const safeName = String(s.name || 'Student').replace(/'/g, "\\'");
+
                 return `
                     <div id="student-card-${s.id}" class="glass-panel p-6 rounded-2xl space-y-4 bg-white border ${isOut ? 'border-amber-300 bg-amber-50/40' : 'border-slate-200'} shadow-sm hover:shadow-md transition-all duration-300">
                         <div class="flex items-center justify-between">
                             <div class="flex items-center space-x-3">
                                 <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-700 font-bold flex items-center justify-center border border-indigo-200 text-base shadow-sm">
-                                    ${s.name.charAt(0)}
+                                    ${String(s.name || 'S').charAt(0).toUpperCase()}
                                 </div>
                                 <div>
-                                    <h3 class="font-bold text-slate-900 text-base">${s.name}</h3>
-                                    <p class="text-xs text-slate-500 font-mono">Roll: ${s.roll_number}</p>
+                                    <h3 class="font-bold text-slate-900 text-base">${s.name || 'N/A'}</h3>
+                                    <p class="text-xs text-slate-500 font-mono">Roll: ${s.roll_number || 'N/A'}</p>
                                 </div>
                             </div>
                             <div class="flex items-center gap-2">
@@ -793,8 +872,8 @@
                         </div>
 
                         <div class="grid grid-cols-2 gap-2 text-xs text-slate-600 pt-2 border-t border-slate-100 pb-1">
-                            <div>Room: <span class="text-slate-900 font-semibold">${s.room_number}</span></div>
-                            <div>Block: <span class="text-slate-900 font-semibold">${s.hostel_block}</span></div>
+                            <div>Room: <span class="text-slate-900 font-semibold">${s.room_number || 'N/A'}</span></div>
+                            <div>Block: <span class="text-slate-900 font-semibold">${s.hostel_block || 'N/A'}</span></div>
                         </div>
 
                         <!-- Prominent Dual Contact Section -->
@@ -819,7 +898,7 @@
                                     </div>
                                     <div class="truncate">
                                         <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 block leading-tight">Parent Contact</span>
-                                        <a href="tel:${s.parent_contact}" class="text-xs font-mono font-bold text-slate-800 hover:text-emerald-600 transition underline">${s.parent_contact || 'N/A'}</a>
+                                        <a href="tel:${s.parent_contact || ''}" class="text-xs font-mono font-bold text-slate-800 hover:text-emerald-600 transition underline">${s.parent_contact || 'N/A'}</a>
                                     </div>
                                 </div>
                                 ${s.parent_contact ? `<a href="tel:${s.parent_contact}" class="shrink-0 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-600 hover:text-white border border-emerald-200 font-bold text-xs flex items-center gap-1 transition shadow-xs"><i data-lucide="phone" class="w-3 h-3"></i> Call</a>` : ''}
@@ -833,17 +912,69 @@
                             <button onclick="openDeleteModal('${s.id}')" class="py-1.5 px-3 rounded-lg bg-rose-50 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-200/80 font-bold text-xs flex items-center justify-center gap-1.5 transition-all duration-200 group/btn-del shadow-2xs hover:scale-105 active:scale-95 hover:shadow-md hover:shadow-rose-600/20" title="Delete Student Profile">
                                 <i data-lucide="trash-2" class="w-3.5 h-3.5 group-hover/btn-del:-rotate-12 group-hover/btn-del:scale-110 transition-transform duration-200"></i> Delete
                             </button>
-                            <button onclick="quickManualEntry('${s.id}', 'IN', '${s.name.replace(/'/g, "\\'")}')" class="flex-1 py-1.5 px-2.5 rounded-lg ${!isOut ? 'bg-emerald-50 text-emerald-700 border-emerald-200 opacity-60' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'} border font-bold text-xs flex items-center justify-center gap-1 transition">
+                            <button onclick="quickManualEntry('${s.id}', 'IN', '${safeName}')" class="flex-1 py-1.5 px-2.5 rounded-lg ${!isOut ? 'bg-emerald-50 text-emerald-700 border-emerald-200 opacity-60' : 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm'} border font-bold text-xs flex items-center justify-center gap-1 transition">
                                 <i data-lucide="log-in" class="w-3.5 h-3.5"></i> Mark IN
                             </button>
-                            <button onclick="quickManualEntry('${s.id}', 'OUT', '${s.name.replace(/'/g, "\\'")}')" class="flex-1 py-1.5 px-2.5 rounded-lg ${isOut ? 'bg-amber-50 text-amber-700 border-amber-200 opacity-60' : 'bg-amber-600 hover:bg-amber-700 text-white shadow-sm'} border font-bold text-xs flex items-center justify-center gap-1 transition">
+                            <button onclick="quickManualEntry('${s.id}', 'OUT', '${safeName}')" class="flex-1 py-1.5 px-2.5 rounded-lg ${isOut ? 'bg-amber-50 text-amber-700 border-amber-200 opacity-60' : 'bg-amber-600 hover:bg-amber-700 text-white shadow-sm'} border font-bold text-xs flex items-center justify-center gap-1 transition">
                                 <i data-lucide="log-out" class="w-3.5 h-3.5"></i> Mark OUT
                             </button>
                         </div>
                     </div>
                 `;
             }).join('');
+
             lucide.createIcons();
+        }
+
+        function renderStudents(list) {
+            const sorted = sortStudentsByName(list);
+
+            const gsbStudents = sorted.filter(s => getHostelBlockGroup(s) === 'GSB');
+            const bcjStudents = sorted.filter(s => getHostelBlockGroup(s) === 'BCJ');
+
+            const unknownStudents = sorted.filter(s => getHostelBlockGroup(s) === null);
+
+            document.getElementById('gsbStudentCount').textContent =
+                `${gsbStudents.length} Student${gsbStudents.length === 1 ? '' : 's'}`;
+
+            document.getElementById('bcjStudentCount').textContent =
+                `${bcjStudents.length} Student${bcjStudents.length === 1 ? '' : 's'}`;
+
+            renderStudentCards(gsbStudents, 'gsbStudentsGrid', 'GSB');
+            renderStudentCards(bcjStudents, 'bcjStudentsGrid', 'BCJ');
+
+            /*
+             * Existing records created before the new block dropdown may still
+             * contain values such as "Block-A". They are not silently assigned
+             * to GSB or BCJ because that could put a student in the wrong hostel.
+             * They remain visible in a small legacy section only when such records
+             * exist, so no existing student disappears.
+             */
+            let legacySection = document.getElementById('legacyStudentsSection');
+
+            if (unknownStudents.length > 0) {
+                if (!legacySection) {
+                    legacySection = document.createElement('div');
+                    legacySection.id = 'legacyStudentsSection';
+                    legacySection.className = 'space-y-4 pt-4';
+                    document.getElementById('bcjStudentsGrid').closest('.space-y-4').parentElement.appendChild(legacySection);
+                }
+
+                legacySection.innerHTML = `
+                    <div class="flex items-center justify-between px-1">
+                        <div>
+                            <h4 class="text-base font-bold text-slate-700">Other / Block Not Set</h4>
+                            <p class="text-xs text-slate-500">These existing records have a block value other than GSB or BCJ.</p>
+                        </div>
+                        <span class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 border border-slate-200 text-xs font-bold">${unknownStudents.length} Student${unknownStudents.length === 1 ? '' : 's'}</span>
+                    </div>
+                    <div id="legacyStudentsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+                `;
+
+                renderStudentCards(unknownStudents, 'legacyStudentsGrid', 'the selected block');
+            } else if (legacySection) {
+                legacySection.remove();
+            }
         }
 
         function openDeleteModal(studentId) {
@@ -945,7 +1076,7 @@
             document.getElementById('editName').value = student.name || '';
             document.getElementById('editRollNumber').value = student.roll_number || '';
             document.getElementById('editRoomNumber').value = student.room_number || '';
-            document.getElementById('editHostelBlock').value = student.hostel_block || 'Block-A';
+            document.getElementById('editHostelBlock').value = getHostelBlockGroup(student) || 'GSB';
             document.getElementById('editCurrentStatus').value = student.current_status || 'IN';
             document.getElementById('editParentContact').value = student.parent_contact || '';
             document.getElementById('editStudentContact').value = student.student_contact || '';
@@ -1040,12 +1171,22 @@
         }
 
         function filterStudents() {
-            const q = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = allStudents.filter(s => 
-                s.name.toLowerCase().includes(q) ||
-                s.roll_number.toLowerCase().includes(q) ||
-                s.room_number.toLowerCase().includes(q)
-            );
+            const q = document.getElementById('searchInput').value.trim().toLowerCase();
+
+            const filtered = allStudents.filter(s => {
+                const name = String(s.name || '').toLowerCase();
+                const roll = String(s.roll_number || '').toLowerCase();
+                const room = String(s.room_number || '').toLowerCase();
+                const block = String(s.hostel_block || '').toLowerCase();
+
+                return (
+                    name.includes(q) ||
+                    roll.includes(q) ||
+                    room.includes(q) ||
+                    block.includes(q)
+                );
+            });
+
             renderStudents(filtered);
         }
 
