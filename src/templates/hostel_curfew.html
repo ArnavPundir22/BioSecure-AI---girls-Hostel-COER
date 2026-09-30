@@ -62,7 +62,7 @@
             <!-- Actions & Curfew Window Pill -->
             <div class="flex items-center space-x-4">
                 <div class="text-xs font-mono bg-rose-50 text-rose-700 px-3 py-1.5 rounded-xl border border-rose-200 font-semibold flex items-center gap-1.5 shadow-sm">
-                    <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i> Curfew Window: 17:00 - 19:30
+                    <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-600"></i> Curfew Window
                 </div>
 
                 <button onclick="toggleMobileMenu()" class="md:hidden p-2 rounded-xl bg-slate-100 border border-slate-200 text-slate-700">
@@ -99,7 +99,7 @@
                 <!-- System Scope Pill -->
                 <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 border border-white/15 text-xs text-slate-200 backdrop-blur-md">
                     <span class="w-2 h-2 rounded-full bg-rose-400 animate-pulse"></span>
-                    <span>Curfew Deadline: <code class="text-rose-300 font-mono font-semibold">19:30 PM (7:30 PM)</code></span>
+                    <span>Curfew Deadline: <code id="heroCurfewDeadline" class="text-rose-300 font-mono font-semibold">Loading...</code></span>
                 </div>
 
                 <!-- Action Badge -->
@@ -115,7 +115,7 @@
                         Curfew Compliance & Overdue Alert Center
                     </h2>
                     <p class="text-slate-300 text-xs sm:text-sm max-w-2xl leading-relaxed">
-                        Automated computer vision surveillance tracks students currently <code class="text-amber-300">OUT</code> past the 7:30 PM deadline and provides instant parent & student contact details for immediate warden resolution.
+                        Automated computer vision surveillance tracks students currently <code class="text-amber-300">OUT</code> past the configured curfew deadline and provides instant parent & student contact details for immediate warden resolution.
                     </p>
                 </div>
 
@@ -127,7 +127,7 @@
                             </div>
                             <div>
                                 <h4 class="text-xs font-bold text-white">Daily Curfew Window</h4>
-                                <p class="text-[11px] text-slate-300">17:00 - 19:30 PM</p>
+                                <p id="dailyCurfewWindow" class="text-[11px] text-slate-300">Loading...</p>
                             </div>
                         </div>
                         <span class="text-[10px] px-2.5 py-0.5 rounded-md bg-rose-500/30 text-rose-200 font-mono font-bold border border-rose-400/30">
@@ -154,27 +154,113 @@
 
         <div>
             <h2 class="text-2xl font-bold text-slate-900 tracking-tight">Curfew Compliance & Overdue Alert Center</h2>
-            <p class="text-sm text-slate-500">Automated system scans students currently <code class="text-amber-600 font-mono font-semibold">OUT</code> past the 7:30 PM deadline</p>
+            <p class="text-sm text-slate-500">Automated system scans students currently <code class="text-amber-600 font-mono font-semibold">OUT</code> past the configured curfew deadline</p>
         </div>
 
-        <!-- Curfew Configuration Info -->
-        <div class="glass-panel p-6 rounded-2xl bg-indigo-50/60 border border-indigo-200 grid grid-cols-1 md:grid-cols-3 gap-6 shadow-sm">
-            <div>
-                <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">System Monitoring Start</span>
-                <div class="text-xl font-bold text-slate-900 mt-1">5:00 PM (17:00)</div>
-                <p class="text-xs text-slate-500 mt-0.5">System begins tracking hostel exits</p>
-            </div>
-            <div>
-                <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Curfew Deadline Cutoff</span>
-                <div class="text-xl font-bold text-rose-700 mt-1">7:30 PM (19:30)</div>
-                <p class="text-xs text-slate-500 mt-0.5">All students must return by this time</p>
-            </div>
-            <div>
-                <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">Overdue Escalation</span>
-                <div class="text-xl font-bold text-amber-700 mt-1">Automated Parent Call</div>
-                <p class="text-xs text-slate-500 mt-0.5">Alerts dispatched immediately</p>
-            </div>
+       <!-- Curfew Configuration Info -->
+<div class="glass-panel p-6 rounded-2xl bg-indigo-50/60 border border-indigo-200 grid grid-cols-1 md:grid-cols-3 gap-6 shadow-sm">
+
+    <!-- System Monitoring Start -->
+    <div>
+        <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">
+            System Monitoring Start
+        </span>
+
+        <div class="mt-2">
+            <input
+                type="time"
+                id="curfewStartTime"
+                value=""
+                class="w-full max-w-[180px] px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            >
         </div>
+
+        <p class="text-xs text-slate-500 mt-1">
+            System begins tracking hostel exits
+        </p>
+    </div>
+
+
+    <!-- Curfew Deadline Cutoff -->
+    <div>
+        <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">
+            Curfew Deadline Cutoff
+        </span>
+
+        <div class="mt-2">
+            <input
+                type="time"
+                id="curfewEndTime"
+                value=""
+                class="w-full max-w-[180px] px-3 py-2 rounded-xl border border-rose-300 bg-white text-rose-700 font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500"
+            >
+        </div>
+
+        <p class="text-xs text-slate-500 mt-1">
+            All students must return by this time
+        </p>
+    </div>
+
+
+    <!-- Curfew Monitoring -->
+    <div>
+        <span class="text-xs text-slate-500 uppercase tracking-wider font-semibold">
+            Curfew Monitoring
+        </span>
+
+        <div class="mt-2 flex items-center gap-3">
+            <label class="relative inline-flex items-center cursor-pointer">
+                <input
+                    type="checkbox"
+                    id="curfewEnabled"
+                    class="sr-only peer"
+                    checked
+                >
+                <div class="w-11 h-6 bg-slate-300 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-indigo-300 rounded-full peer peer-checked:bg-indigo-600
+                            after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                            after:bg-white after:border-slate-300 after:border after:rounded-full
+                            after:h-5 after:w-5 after:transition-all
+                            peer-checked:after:translate-x-full peer-checked:after:border-white">
+                </div>
+            </label>
+
+            <span
+                id="curfewEnabledLabel"
+                class="text-sm font-bold text-emerald-700"
+            >
+                Enabled
+            </span>
+        </div>
+
+        <p class="text-xs text-slate-500 mt-1">
+            Controls automatic curfew monitoring
+        </p>
+    </div>
+
+</div>
+
+
+<!-- Curfew Configuration Actions -->
+<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mt-4">
+
+    <div
+        id="curfewConfigMessage"
+        class="text-sm font-medium text-slate-500"
+    >
+        Loading current curfew configuration...
+    </div>
+
+    <button
+        type="button"
+        id="saveCurfewConfigBtn"
+        onclick="saveCurfewConfig()"
+        class="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm shadow-sm transition flex items-center gap-2"
+    >
+        <i data-lucide="save" class="w-4 h-4"></i>
+        Save Configuration
+    </button>
+
+</div>
 
         <!-- Active Overdue Alerts -->
         <div class="glass-panel p-6 rounded-2xl space-y-4 bg-white border border-rose-200 shadow-sm">
@@ -238,7 +324,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div>Curfew Window: <span class="text-slate-800 font-medium">17:00 - 19:30 PM</span></div>
+                                    <div>Curfew Window: <span class="text-slate-800 font-medium">${formatCurfewWindow(a.system_start_time, a.curfew_end_time)}</span></div>
                                     <div>Alert Triggered: <span class="text-slate-500 font-mono">${new Date(a.alert_triggered_at).toLocaleString()}</span></div>
                                 </div>
                                 <button onclick="resolveCurfewAlert(${a.id})" class="w-full text-xs py-2 bg-rose-600 hover:bg-rose-700 text-white font-semibold rounded-lg transition shadow-sm">
@@ -281,6 +367,221 @@
                 menu.classList.toggle('hidden');
             }
         }
+    // ---------------------------------------------------------------------------
+// Curfew Configuration
+// ---------------------------------------------------------------------------
+
+function formatDisplayTime(value) {
+    if (!value) {
+        return "Not configured";
+    }
+
+    const parts = String(value).split(":");
+    if (parts.length < 2) {
+        return String(value);
+    }
+
+    const hours = parseInt(parts[0], 10);
+    const minutes = parts[1];
+
+    if (Number.isNaN(hours)) {
+        return String(value);
+    }
+
+    const suffix = hours >= 12 ? "PM" : "AM";
+    const displayHour = hours % 12 || 12;
+
+    return `${displayHour}:${minutes} ${suffix}`;
+}
+
+
+function formatCurfewWindow(startTime, endTime) {
+    if (!startTime || !endTime) {
+        return "Curfew window not configured";
+    }
+
+    return `${formatDisplayTime(startTime)} - ${formatDisplayTime(endTime)}`;
+}
+
+
+function updateCurfewDisplay(config) {
+    const startTime = config.start_time;
+    const endTime = config.end_time;
+
+    const heroDeadline = document.getElementById("heroCurfewDeadline");
+    const dailyWindow = document.getElementById("dailyCurfewWindow");
+
+    if (heroDeadline) {
+        heroDeadline.textContent = endTime
+            ? `${formatDisplayTime(endTime)} (${endTime})`
+            : "Not configured";
+    }
+
+    if (dailyWindow) {
+        dailyWindow.textContent =
+            formatCurfewWindow(startTime, endTime);
+    }
+}
+
+
+async function loadCurfewConfig() {
+    const messageEl = document.getElementById("curfewConfigMessage");
+
+    try {
+        const response = await fetch("/hostel/api/curfew_config");
+
+        if (!response.ok) {
+            throw new Error("Failed to load curfew configuration.");
+        }
+
+        const config = await response.json();
+
+        document.getElementById("curfewStartTime").value =
+            config.start_time || "";
+
+        document.getElementById("curfewEndTime").value =
+            config.end_time || "";
+
+        const enabled = config.enabled !== false;
+
+        const enabledCheckbox =
+            document.getElementById("curfewEnabled");
+
+        enabledCheckbox.checked = enabled;
+
+        updateCurfewEnabledLabel();
+        updateCurfewDisplay(config);
+
+        messageEl.textContent = "Current configuration loaded.";
+        messageEl.className =
+            "text-sm font-medium text-emerald-600";
+    } catch (error) {
+        console.error("Error loading curfew configuration:", error);
+
+        messageEl.textContent =
+            "Could not load curfew configuration.";
+        messageEl.className =
+            "text-sm font-medium text-rose-600";
+    }
+}
+
+
+async function saveCurfewConfig() {
+    const button = document.getElementById("saveCurfewConfigBtn");
+    const messageEl = document.getElementById("curfewConfigMessage");
+
+    const startTime =
+        document.getElementById("curfewStartTime").value;
+
+    const endTime =
+        document.getElementById("curfewEndTime").value;
+
+    const enabled =
+        document.getElementById("curfewEnabled").checked;
+
+    if (!startTime || !endTime) {
+        messageEl.textContent =
+            "Please select both start time and deadline.";
+        messageEl.className =
+            "text-sm font-medium text-rose-600";
+        return;
+    }
+
+    try {
+        button.disabled = true;
+        button.innerHTML =
+            '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i> Saving...';
+
+        if (typeof lucide !== "undefined") {
+            lucide.createIcons();
+        }
+
+        const response = await fetch(
+            "/hostel/api/curfew_config",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    start_time: startTime,
+                    end_time: endTime,
+                    enabled: enabled
+                })
+            }
+        );
+
+        const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(
+                result.error || "Failed to save configuration."
+            );
+        }
+
+        updateCurfewDisplay(result.config || {
+            start_time: startTime,
+            end_time: endTime,
+            enabled: enabled
+        });
+
+        messageEl.textContent =
+            "Curfew configuration saved successfully.";
+        messageEl.className =
+            "text-sm font-medium text-emerald-600";
+
+    } catch (error) {
+        console.error("Error saving curfew configuration:", error);
+
+        messageEl.textContent =
+            error.message || "Failed to save configuration.";
+        messageEl.className =
+            "text-sm font-medium text-rose-600";
+
+    } finally {
+        button.disabled = false;
+        button.innerHTML =
+            '<i data-lucide="save" class="w-4 h-4"></i> Save Configuration';
+
+        if (typeof lucide !== "undefined") {
+            lucide.createIcons();
+        }
+    }
+}
+
+
+function updateCurfewEnabledLabel() {
+    const checkbox = document.getElementById("curfewEnabled");
+    const label = document.getElementById("curfewEnabledLabel");
+
+    if (!checkbox || !label) {
+        return;
+    }
+
+    if (checkbox.checked) {
+        label.textContent = "Enabled";
+        label.className =
+            "text-sm font-bold text-emerald-700";
+    } else {
+        label.textContent = "Disabled";
+        label.className =
+            "text-sm font-bold text-slate-500";
+    }
+}
+
+
+document.addEventListener("DOMContentLoaded", function () {
+    const checkbox = document.getElementById("curfewEnabled");
+
+    if (checkbox) {
+        checkbox.addEventListener(
+            "change",
+            updateCurfewEnabledLabel
+        );
+    }
+
+    loadCurfewConfig();
+});
     </script>
 
     <!-- Mobile Fixed Bottom Navigation Bar -->
