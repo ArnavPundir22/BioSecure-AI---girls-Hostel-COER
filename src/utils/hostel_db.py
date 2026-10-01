@@ -289,7 +289,7 @@ class MockRpcQuery:
             return MockResponse(data=matches[:match_count])
 
         return MockResponse(data=[])
-
+    
 
 def _default_system_settings() -> List[Dict[str, Any]]:
     now_str = datetime.now(timezone.utc).isoformat()
@@ -1118,28 +1118,73 @@ def resolve_curfew_alert(
     notes: str = "",
     client: Optional[Any] = None
 ) -> bool:
-    """Resolve a curfew alert with updated status, notes, and timestamp."""
+    """
+    Resolve/acknowledge a curfew alert without changing the student's
+    current IN/OUT movement status.
+
+    Task 3 rule:
+        Resolving a curfew alert does NOT mean the student has returned.
+
+    The student's current_status remains unchanged until an actual
+    IN movement is recorded through the normal movement system.
+    """
     try:
         c = get_hostel_client(client)
+
+        # ---------------------------------------------------------------
+        # 1. Fetch the alert first so we know which student it belongs to.
+        # ---------------------------------------------------------------
+        alert_res = (
+            c.table("curfew_alerts")
+            .select("id, student_id, status, notes")
+            .eq("id", alert_id)
+            .execute()
+        )
+
+        if not alert_res.data:
+            logger.warning(
+                f"Cannot resolve curfew alert #{alert_id}: alert not found."
+            )
+            return False
+
+        alert = alert_res.data[0]
+        student_id = alert.get("student_id")
+
+        # ---------------------------------------------------------------
+        # 2. Update ONLY the curfew alert.
+        #
+        # IMPORTANT:
+        # Do NOT update student_profiles.current_status here.
+        # A RESOLVED alert is an acknowledgement by the warden,
+        # NOT proof that the student has returned.
+        # ---------------------------------------------------------------
         payload = {
             "status": status,
             "resolved_at": datetime.now(timezone.utc).isoformat(),
-            "notes": notes
+            "notes": notes or ""
         }
+
         res = (
             c.table("curfew_alerts")
             .update(payload)
             .eq("id", alert_id)
             .execute()
         )
+
         if res.data is not None and len(res.data) > 0:
             logger.info(
-                f"Curfew alert #{alert_id} resolved with status '{status}'"
+                f"Curfew alert #{alert_id} for student {student_id} "
+                f"resolved/acknowledged with status '{status}'. "
+                f"Student movement status was NOT changed."
             )
             return True
+
         return False
+
     except Exception as e:
-        logger.error(f"Error resolving curfew alert #{alert_id}: {e}")
+        logger.error(
+            f"Error resolving curfew alert #{alert_id}: {e}"
+        )
         return False
 
 

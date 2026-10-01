@@ -11,7 +11,7 @@ echo =================================================================
 
 :: Activate virtual environment if available
 if exist .venv\Scripts\activate.bat (
-    call .venv\Scripts\activate.bat
+    call .venv\Scripts\activate.bat 
     goto ENV_READY
 )
 if exist venv\Scripts\activate.bat (

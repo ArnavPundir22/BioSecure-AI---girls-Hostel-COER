@@ -96,6 +96,69 @@ def curfew_page():
     """Render Curfew Alerts & Schedule Management Page."""
     return render_template("hostel_curfew.html")
 
+
+@hostel_bp.route("/api/curfew_config", methods=["GET", "POST"])
+def curfew_config_api():
+    """Get or update the hostel curfew configuration."""
+    try:
+        if request.method == "GET":
+            config = hostel_db.get_system_settings("curfew_schedule") or {
+                "start_time": "17:00",
+                "end_time": "19:30",
+                "enabled": True,
+            }
+            return jsonify(config), 200
+
+        data = request.get_json(silent=True) or {}
+
+        start_time = str(data.get("start_time", "17:00")).strip()
+        end_time = str(data.get("end_time", "19:30")).strip()
+        enabled = data.get("enabled", True)
+
+        if isinstance(enabled, str):
+            enabled = enabled.lower() in ("true", "1", "yes", "on")
+        else:
+            enabled = bool(enabled)
+
+        for field_name, value in (
+            ("start_time", start_time),
+            ("end_time", end_time),
+        ):
+            try:
+                datetime.datetime.strptime(value, "%H:%M")
+            except (TypeError, ValueError):
+                return jsonify(
+                    {"error": f"{field_name} must use HH:MM format."}
+                ), 400
+
+        config = {
+            "start_time": start_time,
+            "end_time": end_time,
+            "enabled": enabled,
+        }
+
+        success = hostel_db.update_system_settings(
+            "curfew_schedule",
+            config,
+        )
+
+        if not success:
+            return jsonify(
+                {"error": "Failed to save curfew configuration."}
+            ), 500
+
+        return jsonify(
+            {
+                "status": "success",
+                "config": config,
+            }
+        ), 200
+
+    except Exception as e:
+        logger.error(f"Error updating curfew configuration: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
 # ============================================================================
 # API Endpoints
 # ============================================================================
@@ -111,12 +174,21 @@ def get_stats():
         overdue_alerts = hostel_db.fetch_overdue_curfew_students()
         overdue_count = len(overdue_alerts)
 
+        curfew_config = hostel_db.get_system_settings("curfew_schedule") or {
+            "start_time": "17:00",
+            "end_time": "19:30",
+            "enabled": True,
+        }
+
         return jsonify({
             "total_students": len(students),
             "total_in": total_in,
             "total_out": total_out,
             "overdue_count": overdue_count,
-            "curfew_window": "17:00 - 19:30"
+            "curfew_window": (
+                f"{curfew_config.get('start_time', '17:00')} - "
+                f"{curfew_config.get('end_time', '19:30')}"
+            )
         }), 200
     except Exception as e:
         logger.error(f"Error serving /api/stats: {e}")
